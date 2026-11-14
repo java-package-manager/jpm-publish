@@ -103,3 +103,7 @@ jpm test
 jpm build
 JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-0.1.0.jar --dry-run
 ```
+
+## License
+
+MIT, see [LICENSE](LICENSE).
