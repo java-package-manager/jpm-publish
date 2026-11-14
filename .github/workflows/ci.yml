@@ -17,11 +17,31 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+
       - name: Install jpm
         run: |
           curl -fsSL https://github.com/NonSwag/jpm/releases/latest/download/install.sh | sh
           echo "$HOME/.jpm/bin" >> "$GITHUB_PATH"
+          # jpm-publish needs `jpm info --json` and the "url"/"extensions" manifest fields (jpm 0.4.0)
+          v=$("$HOME/.jpm/bin/jpm" --version | cut -d' ' -f2)
+          printf '%s\n%s\n' "0.4.0" "$v" | sort -V -C || { echo "::error::jpm $v is too old; jpm-publish needs 0.4.0 or newer"; exit 1; }
+
       - name: Test
         run: jpm test --frozen
+
       - name: Build
         run: jpm build
+
+      - name: Publish itself to a folder repository
+        run: |
+          set -eux
+          repo="$RUNNER_TEMP/repo"
+          JPM_EXE=jpm JPM_PROJECT_DIR="$PWD" java -jar dist/jpm-publish-*.jar "file://$repo" --javadoc
+          v=$(jpm info --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])')
+          base="$repo/dev/jpm/jpm-publish/$v/jpm-publish-$v"
+          for f in .jar .pom -sources.jar -javadoc.jar; do
+            test -f "$base$f"
+            test -f "$base$f.sha512"
+          done
+          grep -q '<artifactId>jpm-publish</artifactId>' "$base.pom"
+          grep -q "<version>$v</version>" "$repo/dev/jpm/jpm-publish/maven-metadata.xml"
