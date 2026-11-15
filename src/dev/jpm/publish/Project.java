@@ -10,7 +10,8 @@ import java.util.Map;
 record Project(Path dir, String name, boolean workspace, Map<String, Object> settings, List<Module> modules) {
 
     record Dependency(String key, String kind, String scope, String spec, String resolved, String group,
-                      String artifact, String classifier, String version, boolean runtimeOnly, List<String> exclude) {}
+                      String artifact, String classifier, String version, boolean runtimeOnly, List<String> exclude,
+                      boolean api) {}
 
     record Module(String name, String group, String version, Path dir, String visibility, String description,
                   String license, String url, Path sourceDir, Path resourceDir, Path jar, Path javaHome, Integer release,
@@ -39,7 +40,8 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                 Map<String, Object> d = (Map<String, Object>) d0;
                 deps.add(new Dependency(str(d, "key"), str(d, "kind"), str(d, "scope"), str(d, "spec"), str(d, "resolved"),
                         str(d, "group"), str(d, "artifact"), str(d, "classifier"), str(d, "version"),
-                        Boolean.TRUE.equals(d.get("runtimeOnly")), (List<String>) d.getOrDefault("exclude", List.of())));
+                        Boolean.TRUE.equals(d.get("runtimeOnly")), (List<String>) d.getOrDefault("exclude", List.of()),
+                        Boolean.TRUE.equals(d.get("api"))));
             }
             // module settings override the root's, key by key
             Map<String, Object> settings = new LinkedHashMap<>(rootSettings);

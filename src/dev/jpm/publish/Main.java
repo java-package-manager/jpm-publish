@@ -202,16 +202,23 @@ public final class Main {
         Artifacts.write(pom, Pom.write(project, m).getBytes(StandardCharsets.UTF_8));
         files.put(dirInRepo + base + ".pom", pom);
 
+        Path src = null;
         if (o.sources() && !Boolean.FALSE.equals(m.settings().get("sources"))) {
-            Path src = Artifacts.sourcesJar(m, work.resolve(base + "-sources.jar"));
+            src = Artifacts.sourcesJar(m, work.resolve(base + "-sources.jar"));
             files.put(dirInRepo + base + "-sources.jar", src);
         }
         boolean javadoc = o.javadoc() != null ? o.javadoc()
                 : m.settings().get("javadoc") instanceof Boolean b ? b : central;
+        Path doc = null;
         if (javadoc) {
-            Path doc = Artifacts.javadocJar(m, work.resolve(base + "-javadoc.jar"), work);
+            doc = Artifacts.javadocJar(m, work.resolve(base + "-javadoc.jar"), work);
             files.put(dirInRepo + base + "-javadoc.jar", doc);
         }
+        // Gradle Module Metadata, for what a POM cannot say (dev dependencies with "api": true)
+        Path module = work.resolve(base + ".module");
+        Artifacts.write(module, GradleModule.write(m, Pom.dependencies(project, m), new GradleModule.Files(jar, src, doc))
+                .getBytes(StandardCharsets.UTF_8));
+        files.put(dirInRepo + base + ".module", module);
         boolean sign = o.sign() != null ? o.sign() : m.settings().get("sign") instanceof Boolean b ? b : central;
         if (central && !sign) throw new PublishException("Maven Central requires signatures; drop --no-sign");
         if (sign) {

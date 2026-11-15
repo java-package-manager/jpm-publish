@@ -46,8 +46,10 @@ final class Pom {
         List<Dep> out = new ArrayList<>();
         List<String> problems = new ArrayList<>();
         for (Project.Dependency d : m.dependencies()) {
-            if (!"runtime".equals(d.scope())) continue; // dev and test are not for consumers
-            String scope = d.runtimeOnly() ? "runtime" : null;
+            // dev and test are not for consumers, except dev dependencies with "api": true, which they compile against
+            boolean api = "dev".equals(d.scope()) && d.api();
+            if (!"runtime".equals(d.scope()) && !api) continue;
+            String scope = api ? "provided" : d.runtimeOnly() ? "runtime" : null;
             switch (d.kind()) {
                 case "maven" -> {
                     String version = d.resolved() != null ? d.resolved() : d.spec();
@@ -86,6 +88,9 @@ final class Pom {
         x.append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         x.append("         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n");
         x.append("  <modelVersion>4.0.0</modelVersion>\n");
+        // the marker Gradle looks for before it reads the .module file next to the POM
+        x.append("  <!-- This module was also published with a richer model, Gradle metadata, which should be used instead. -->\n");
+        x.append("  <!-- do_not_remove: published-with-gradle-metadata -->\n");
         tag(x, "  ", "groupId", m.group());
         tag(x, "  ", "artifactId", m.name());
         tag(x, "  ", "version", m.version());

@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SuppressWarnings("unchecked")
 class PublishTest {
     static final String INFO = """
             { "infoVersion": 1, "projectDir": "/p", "name": "ws", "workspace": true,
@@ -40,6 +41,8 @@ class PublishTest {
                       "group": "org.lwjgl", "artifact": "lwjgl", "classifier": "natives-linux" },
                     { "key": "workspace:impl", "kind": "workspace", "scope": "runtime", "spec": "*", "module": "impl",
                       "group": "com.acme", "artifact": "impl", "version": "1.2.0" },
+                    { "key": "org.jspecify:jspecify", "kind": "maven", "scope": "dev", "spec": "1.0.0", "resolved": "1.0.0",
+                      "group": "org.jspecify", "artifact": "jspecify", "api": true },
                     { "key": "org.projectlombok:lombok", "kind": "maven", "scope": "dev", "spec": "1.18.34", "group": "org.projectlombok", "artifact": "lombok" },
                     { "key": "org.junit.jupiter:junit-jupiter", "kind": "maven", "scope": "test", "spec": "5.11.4", "group": "org.junit.jupiter", "artifact": "junit-jupiter" }
                   ] },
@@ -65,6 +68,9 @@ class PublishTest {
         assertTrue(pom.contains("<classifier>natives-linux</classifier>"), pom);
         assertTrue(pom.contains("<artifactId>impl</artifactId>\n      <version>1.2.0</version>"), "workspace module by coordinates");
         assertFalse(pom.contains("lombok"), "dev dependencies are not published");
+        assertTrue(pom.contains("<artifactId>jspecify</artifactId>\n      <version>1.0.0</version>\n      <scope>provided</scope>"),
+                "\"api\": true dev dependencies are provided");
+        assertTrue(pom.contains("<!-- do_not_remove: published-with-gradle-metadata -->"), "points Gradle at the .module");
         assertFalse(pom.contains("junit"), "test dependencies are not published");
         assertTrue(pom.contains("<name>MIT License</name>"));
         assertTrue(pom.contains("<connection>scm:git:https://github.com/acme/ws.git</connection>"), "scm from the GitHub url");
@@ -102,6 +108,44 @@ class PublishTest {
         assertTrue(third.contains("<release>1.0.0</release>"), "snapshots are never the release");
         assertEquals(2, third.split("<version>", -1).length - 1, "no duplicates");
         assertTrue(third.contains("<lastUpdated>20260102030405</lastUpdated>"));
+    }
+
+    @Test
+    void writesGradleModuleMetadata(@TempDir Path dir) {
+        Project p = project();
+        Project.Module m = p.module("api");
+        Path jar = dir.resolve("api-1.2.0.jar");
+        Artifacts.write(jar, "jar".getBytes(StandardCharsets.UTF_8));
+        Path src = dir.resolve("api-1.2.0-sources.jar");
+        Artifacts.write(src, "src".getBytes(StandardCharsets.UTF_8));
+        String text = GradleModule.write(m, Pom.dependencies(p, m), new GradleModule.Files(jar, src, null));
+        Map<String, Object> json = Json.object(text);
+        assertEquals("1.1", json.get("formatVersion"));
+        assertEquals(Map.of("group", "com.acme", "module", "api", "version", "1.2.0",
+                "attributes", Map.of("org.gradle.status", "release")), json.get("component"));
+        Map<String, List<String>> deps = new LinkedHashMap<>();
+        Map<String, Map<String, Object>> byName = new LinkedHashMap<>();
+        for (Object o : (List<Object>) json.get("variants")) {
+            Map<String, Object> v = (Map<String, Object>) o;
+            byName.put((String) v.get("name"), v);
+            List<String> names = new ArrayList<>();
+            for (Object d : (List<Object>) v.getOrDefault("dependencies", List.of())) names.add((String) ((Map<String, Object>) d).get("module"));
+            deps.put((String) v.get("name"), names);
+        }
+        assertEquals(List.of("apiElements", "runtimeElements", "sourcesElements"), List.copyOf(byName.keySet()));
+        assertEquals(List.of("slf4j-api", "lwjgl", "impl", "jspecify"), deps.get("apiElements"), "compiled against, not run with");
+        assertEquals(List.of("slf4j-api", "slf4j-simple", "lwjgl", "impl"), deps.get("runtimeElements"), "run with");
+        Map<String, Object> attrs = (Map<String, Object>) byName.get("apiElements").get("attributes");
+        assertEquals("java-api", attrs.get("org.gradle.usage"));
+        Map<String, Object> file = (Map<String, Object>) ((List<Object>) byName.get("runtimeElements").get("files")).get(0);
+        assertEquals("api-1.2.0.jar", file.get("url"));
+        assertEquals(new java.math.BigDecimal(3), file.get("size"));
+        assertEquals(Artifacts.checksums("jar".getBytes(StandardCharsets.UTF_8)).get("sha256"), file.get("sha256"));
+        Map<String, Object> simple = (Map<String, Object>) ((List<Object>) byName.get("runtimeElements").get("dependencies")).get(1);
+        assertEquals(Map.of("requires", "2.0.16"), simple.get("version"));
+        assertEquals(List.of(Map.of("group", "org.slf4j", "module", "slf4j-api")), simple.get("excludes"));
+        Map<String, Object> lwjgl = (Map<String, Object>) ((List<Object>) byName.get("apiElements").get("dependencies")).get(1);
+        assertEquals("natives-linux", ((Map<String, Object>) ((Map<String, Object>) lwjgl.get("thirdPartyCompatibility")).get("artifactSelector")).get("classifier"));
     }
 
     @Test

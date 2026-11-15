@@ -18,9 +18,13 @@ For each module with a `"group"` (in a workspace, every such module unless it se
 
 - the jar from `jpm build`, which `jpm publish` runs first;
 - a POM generated from `project.jsonc`. Runtime dependencies are listed with the versions jpm resolved,
-  with their exclusions and classifiers; `"runtimeOnly": true` becomes Maven's runtime scope. `dev` and
-  `test` dependencies are left out, since consumers never need them. Workspace siblings are referred to by
+  with their exclusions and classifiers; `"runtimeOnly": true` becomes Maven's runtime scope. `dev`
+  dependencies with `"api": true` (Gradle's `compileOnlyApi`) become provided; other `dev` and `test`
+  dependencies are left out, since consumers never need them. Workspace siblings are referred to by
   their coordinates. Git dependencies are refused, because Maven users cannot resolve them;
+- Gradle Module Metadata (`.module`), which says what a POM cannot: `"api": true` dev dependencies are
+  compiled against but not run with. Gradle and jpm read it (consumers get them on the compile classpath
+  only); Maven reads the POM, where provided is not passed on;
 - a sources jar, and a javadoc jar (always for Maven Central, otherwise with `--javadoc` or
   `"javadoc": true`), built with the module's own JDK and release;
 - `.md5`, `.sha1`, `.sha256` and `.sha512` checksums, and the artifact's `maven-metadata.xml`, updated
