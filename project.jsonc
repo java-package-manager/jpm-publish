@@ -1,11 +1,11 @@
-// jpm-publish: the `jpm publish` extension. Install with `jpm add -g github:NonSwag/jpm-publish`.
+// jpm-publish: the `jpm publish` extension. Install with `jpm add -g github:java-package-manager/jpm-publish`.
 {
   "name": "jpm-publish",
   "group": "dev.jpm",
   "version": "0.1.0",
   "license": "MIT",
   "description": "Publish jpm projects to Maven repositories and Maven Central",
-  "url": "https://github.com/NonSwag/jpm-publish",
+  "url": "https://github.com/java-package-manager/jpm-publish",
   "java": "21",
   "main": "dev.jpm.publish.Main",
   "runtime": {},

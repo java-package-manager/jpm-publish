@@ -1,6 +1,6 @@
 # jpm-publish
 
-`jpm publish` for [jpm](https://github.com/NonSwag/jpm): publishes your modules to any Maven repository
+`jpm publish` for [jpm](https://github.com/java-package-manager/jpm): publishes your modules to any Maven repository
 (Reposilite, Nexus, Artifactory, GitHub Packages, a folder), to your local `~/.m2`, or to **Maven Central**
 through the Sonatype Central Portal.
 
@@ -8,7 +8,7 @@ It is a jpm extension: jpm runs `jpm publish` as `jpm-publish`. It needs jpm 0.4
 `jpm info --json`) and has no dependencies of its own.
 
 ```sh
-jpm add -g github:NonSwag/jpm-publish
+jpm add -g github:java-package-manager/jpm-publish
 jpm publish --help
 ```
 
@@ -108,7 +108,7 @@ JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-0.1.0.
 
 Change `"version"` in `project.jsonc` and push to `main`: once the tests pass, CI tags that commit with
 the version (plain, no `v` prefix). jpm builds extensions from their source, so the tag is the release:
-`jpm add -g github:NonSwag/jpm-publish` installs the newest tag, and `jpm update -g` moves to newer ones
+`jpm add -g github:java-package-manager/jpm-publish` installs the newest tag, and `jpm update -g` moves to newer ones
 (`jpm update -g --latest` past the installed range, e.g. from 0.x to 1.0).
 
 ## License

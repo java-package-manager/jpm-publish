@@ -46,7 +46,7 @@ jobs:
 
       - name: Install jpm
         run: |
-          curl -fsSL https://github.com/NonSwag/jpm/releases/latest/download/install.sh | sh
+          curl -fsSL https://github.com/java-package-manager/jpm/releases/latest/download/install.sh | sh
           echo "$HOME/.jpm/bin" >> "$GITHUB_PATH"
           # jpm-publish needs `jpm info --json` and the "url"/"extensions" manifest fields (jpm 0.4.0)
           v=$("$HOME/.jpm/bin/jpm" --version | cut -d' ' -f2)
@@ -73,7 +73,7 @@ jobs:
           grep -q "<version>$v</version>" "$repo/dev/jpm/jpm-publish/maven-metadata.xml"
 
   # jpm installs extensions from their Git source, so a release is just a tag: it is what
-  # `jpm add -g github:NonSwag/jpm-publish` resolves (^<version>) instead of the main branch.
+  # `jpm add -g github:java-package-manager/jpm-publish` resolves (^<version>) instead of the main branch.
   tag:
     name: tag
     if: needs.version.outputs.release == 'true'
