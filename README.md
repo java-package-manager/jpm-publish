@@ -108,7 +108,8 @@ JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-0.1.0.
 
 Change `"version"` in `project.jsonc` and push to `main`: once the tests pass, CI tags that commit with
 the version (plain, no `v` prefix). jpm builds extensions from their source, so the tag is the release:
-`jpm add -g github:NonSwag/jpm-publish` installs the newest tag, and running it again moves to a newer one.
+`jpm add -g github:NonSwag/jpm-publish` installs the newest tag, and `jpm update -g` moves to newer ones
+(`jpm update -g --latest` past the installed range, e.g. from 0.x to 1.0).
 
 ## License
 
