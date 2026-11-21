@@ -15,7 +15,8 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
 
     record Module(String name, String group, String version, Path dir, String visibility, String description,
                   String license, String url, Path sourceDir, Path resourceDir, Path jar, Path javaHome, Integer release,
-                  List<Dependency> dependencies, Map<String, Object> settings, List<Path> compileClasspath) {
+                  List<Dependency> dependencies, Map<String, Object> settings, List<Path> compileClasspath,
+                  List<String> compileModuleOptions) {
 
         boolean snapshot() {
             return version.endsWith("-SNAPSHOT");
@@ -48,10 +49,14 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
             settings.putAll(map(map(m.get("extensions")).get("publish")));
             List<Path> cp = new ArrayList<>();
             for (Object p : (List<Object>) m.getOrDefault("compileClasspath", List.of())) cp.add(Path.of((String) p));
+            // jpm 0.8.1+: for a named module, the module path / class path split javac compiles it with
+            Object opts = map(m.get("compileModule")).get("options");
+            List<String> moduleOptions = opts instanceof List<?> l ? l.stream().map(Object::toString).toList() : null;
             Object rel = m.get("release");
             modules.add(new Module(str(m, "name"), str(m, "group"), str(m, "version"), path(m, "dir"), str(m, "visibility"),
                     str(m, "description"), str(m, "license"), str(m, "url"), path(m, "sourceDir"), path(m, "resourceDir"),
-                    path(m, "jar"), path(m, "javaHome"), rel == null ? null : Integer.valueOf(rel.toString()), deps, settings, cp));
+                    path(m, "jar"), path(m, "javaHome"), rel == null ? null : Integer.valueOf(rel.toString()), deps, settings, cp,
+                    moduleOptions));
         }
         return new Project(Path.of(str(info, "projectDir")), str(info, "name"), Boolean.TRUE.equals(info.get("workspace")),
                 rootSettings, modules);

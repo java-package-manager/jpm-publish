@@ -80,7 +80,11 @@ final class Artifacts {
                 args.add("--release");
                 args.add(m.release().toString());
             }
-            if (!m.compileClasspath().isEmpty()) {
+            if (m.compileModuleOptions() != null) {
+                // as javac got them: jars that are not modules stay on the class path, since as automatic
+                // modules two sharing a package would stop javadoc
+                args.addAll(m.compileModuleOptions());
+            } else if (!m.compileClasspath().isEmpty()) {
                 String cp = String.join(java.io.File.pathSeparator, m.compileClasspath().stream().map(Path::toString).toList());
                 // named modules take their dependencies from the module path
                 boolean modular = Files.exists(m.sourceDir().resolve("module-info.java"));
