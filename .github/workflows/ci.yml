@@ -40,10 +40,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # jpm-publish talks to jpm over its protocol (`jpm api`), which is in canary builds until jpm 0.12.0
+      # jpm-publish talks to jpm over its protocol (`jpm api`, jpm 0.12.0 or newer)
       - uses: java-package-manager/setup-jpm@v1
         with:
-          version: canary
           java: "21"
 
       - name: No comments in the sources

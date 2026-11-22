@@ -2,12 +2,13 @@
 {
   "name": "jpm-publish",
   "group": "dev.jpm",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "Publish jpm projects to Maven repositories and Maven Central",
   "url": "https://github.com/java-package-manager/jpm-publish",
   "java": "21",
   "main": "dev.jpm.publish.Main",
+  "defineClass": "dev.jpm.publish.BuildConfig",
   // what IDEs show for `jpm publish` (jpm's extensions/list); PublishTest checks it lists every option of the help
   "extension": {
     "description": "Publish jpm modules to Maven repositories and Maven Central",
@@ -28,10 +29,10 @@
       }
     }
   },
-  "repositories": ["https://repo.thenextlvl.net/snapshots"],
+  "repositories": ["https://repo.thenextlvl.net/releases"],
   "runtime": {
-    // jpm's client; a timestamped snapshot until jpm 0.12.0 is released
-    "dev.jpm:jpm-api": "0.11.0-20261122.183444-2"
+    // jpm's client: the jpm protocol, which jpm 0.12.0 serves
+    "dev.jpm:jpm-api": "^0.12.0"
   },
   "test": {
     "org.junit.jupiter:junit-jupiter": "5.11.4"

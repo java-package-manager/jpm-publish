@@ -22,7 +22,8 @@ import java.util.Map;
  * jpm's protocol ({@code jpm api}), builds it with {@code jpm build}, and publishes each module with a group.
  */
 public final class Main {
-    static final String VERSION = "0.1.0";
+    /** The version in project.jsonc, from the {@code BuildConfig} class jpm generates ({@code "defineClass"}). */
+    static final String VERSION = BuildConfig.VERSION;
 
     static final String HELP = """
             jpm publish - publish jpm modules to Maven repositories and Maven Central
@@ -98,8 +99,7 @@ public final class Main {
         } catch (ProtocolMismatch e) {
             throw new PublishException(e.getMessage());
         } catch (JpmError e) {
-            throw new PublishException(e.getMessage().contains("stopped") || e.getMessage().contains("could not be reached")
-                    ? "jpm-publish needs jpm 0.12.0 or newer (`jpm api`); run `jpm upgrade`" : e.getMessage());
+            throw new PublishException(e.getMessage());
         }
     }
 
