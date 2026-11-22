@@ -16,10 +16,10 @@ java checks/Comments.java check src test     # the comment lint CI runs
 
 ## Rules for the code
 
-- No dependencies besides jpm's client (`github:java-package-manager/jpm/jpm-api`).
+- No dependencies besides jpm's client (`dev.jpm:jpm-api` (from `https://repo.thenextlvl.net`)).
 - No `//` or `/* */` comments ([docs/adr/0001](docs/adr/0001-decisions-live-in-adrs.md)). Decisions go
   into [docs/adr](docs/adr); Javadoc is fine.
-- jpm-publish reads projects through jpm's protocol, with the client from `github:java-package-manager/jpm/jpm-api`, never
+- jpm-publish reads projects through jpm's protocol, with the client from `dev.jpm:jpm-api` (from `https://repo.thenextlvl.net`), never
   by parsing `project.jsonc` or sources itself.
 - No stability before 1.0: options and settings may change in any release, with no deprecation period.
 

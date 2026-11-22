@@ -8,9 +8,10 @@
   "url": "https://github.com/java-package-manager/jpm-publish",
   "java": "21",
   "main": "dev.jpm.publish.Main",
+  "repositories": ["https://repo.thenextlvl.net/snapshots"],
   "runtime": {
-    // the client of jpm's protocol, from jpm's own repository
-    "github:java-package-manager/jpm/jpm-api": "#main"
+    // jpm's client; a timestamped snapshot until jpm 0.12.0 is released
+    "dev.jpm:jpm-api": "0.11.0-20261122.163616-1"
   },
   "test": {
     "org.junit.jupiter:junit-jupiter": "5.11.4"

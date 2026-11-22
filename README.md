@@ -6,7 +6,7 @@ through the Sonatype Central Portal.
 
 It is a jpm extension: jpm runs `jpm publish` as `jpm-publish`. It reads the project through jpm's
 protocol (`jpm api`), so it needs jpm 0.12.0 or newer; its one dependency is jpm's client,
-`github:java-package-manager/jpm/jpm-api`.
+`dev.jpm:jpm-api` (from `https://repo.thenextlvl.net`).
 
 ```sh
 jpm add -g github:java-package-manager/jpm-publish
