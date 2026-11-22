@@ -31,7 +31,7 @@
   "repositories": ["https://repo.thenextlvl.net/snapshots"],
   "runtime": {
     // jpm's client; a timestamped snapshot until jpm 0.12.0 is released
-    "dev.jpm:jpm-api": "0.11.0-20261122.163616-1"
+    "dev.jpm:jpm-api": "0.11.0-20261122.183444-2"
   },
   "test": {
     "org.junit.jupiter:junit-jupiter": "5.11.4"
