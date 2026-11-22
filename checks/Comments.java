@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Lists or removes {@code //} and {@code /* ... *}{@code /} comments in Java files. Javadoc is left alone, and
+ * Lists or removes {@code //} and {@code /* ... *}{@code /} comments in Java and Kotlin files. Javadoc is left alone, and
  * so are comment markers inside strings, character literals and text blocks.
  *
  * <ul>
@@ -164,7 +164,7 @@ public final class Comments {
                 continue;
             }
             try (Stream<Path> s = Files.walk(root)) {
-                s.filter(p -> p.toString().endsWith(".java") && Files.isRegularFile(p))
+                s.filter(p -> (p.toString().endsWith(".java") || p.toString().endsWith(".kt")) && Files.isRegularFile(p))
                         .sorted()
                         .forEach(out::add);
             }
