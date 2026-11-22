@@ -14,8 +14,6 @@ JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-<versi
 java checks/Comments.java check src test     # the comment lint CI runs
 ```
 
-To run it as `jpm publish` from a checkout, install the checkout globally: `jpm add -g <path to it>`.
-
 ## Rules for the code
 
 - No dependencies: the JDK only.
