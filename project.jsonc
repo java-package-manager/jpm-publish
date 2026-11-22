@@ -8,6 +8,26 @@
   "url": "https://github.com/java-package-manager/jpm-publish",
   "java": "21",
   "main": "dev.jpm.publish.Main",
+  // what IDEs show for `jpm publish` (jpm's extensions/list); PublishTest checks it lists every option of the help
+  "extension": {
+    "description": "Publish jpm modules to Maven repositories and Maven Central",
+    "commands": {
+      "publish": {
+        "description": "Publish every module with a \"group\" to a repository from extensions.publish.repositories, or a URL",
+        "options": {
+          "--local": { "description": "Publish to the local Maven repository (~/.m2/repository)" },
+          "--module": { "argument": "name", "description": "Publish only this module (repeatable)" },
+          "--dry-run": { "description": "Build everything into .cache/publish/ and show what would be uploaded" },
+          "--no-build": { "description": "Use the jars already in dist/" },
+          "--no-sources": { "description": "Leave out the sources jar" },
+          "--no-javadoc": { "description": "Leave out the javadoc jar" },
+          "--sign": { "description": "Sign with gpg (default: on for Maven Central, off elsewhere)" },
+          "--no-sign": { "description": "Do not sign" },
+          "--no-wait": { "description": "Maven Central: do not wait for validation" }
+        }
+      }
+    }
+  },
   "repositories": ["https://repo.thenextlvl.net/snapshots"],
   "runtime": {
     // jpm's client; a timestamped snapshot until jpm 0.12.0 is released

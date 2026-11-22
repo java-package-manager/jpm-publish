@@ -312,4 +312,19 @@ class PublishTest {
         Repository.Maven local = new Repository.Maven("local", repo.toUri().toString(), true);
         local.publish(List.of(upload(dir, api)));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void theDescriptorListsEveryOptionOfTheHelp() throws IOException {
+        Map<String, Object> manifest = (Map<String, Object>) Jsonc.parse(java.nio.file.Files.readString(Path.of("project.jsonc")));
+        Map<String, Object> commands = (Map<String, Object>) ((Map<String, Object>) manifest.get("extension")).get("commands");
+        Map<String, Object> options = (Map<String, Object>) ((Map<String, Object>) commands.get("publish")).get("options");
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?m)^\\s+(--[a-z-]+)").matcher(Main.HELP);
+        List<String> help = new ArrayList<>();
+        while (m.find()) help.add(m.group(1));
+        java.util.regex.Matcher pair = java.util.regex.Pattern.compile("/ (--[a-z-]+)").matcher(Main.HELP);
+        while (pair.find()) help.add(pair.group(1));
+        assertFalse(help.isEmpty());
+        assertEquals(new java.util.TreeSet<>(help), new java.util.TreeSet<>(options.keySet()));
+    }
 }
