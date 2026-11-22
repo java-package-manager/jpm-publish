@@ -214,7 +214,6 @@ public final class Main {
             doc = Artifacts.javadocJar(m, work.resolve(base + "-javadoc.jar"), work);
             files.put(dirInRepo + base + "-javadoc.jar", doc);
         }
-        // Gradle Module Metadata, for what a POM cannot say (dev dependencies with "api": true)
         Path module = work.resolve(base + ".module");
         Artifacts.write(module, GradleModule.write(m, Pom.dependencies(project, m), new GradleModule.Files(jar, src, doc))
                 .getBytes(StandardCharsets.UTF_8));

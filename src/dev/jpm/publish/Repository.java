@@ -51,7 +51,6 @@ abstract class Repository {
         String key = id.toUpperCase().replaceAll("[^A-Z0-9]", "_");
         String user = env("JPM_PUBLISH_" + key + "_USERNAME");
         String pass = env("JPM_PUBLISH_" + key + "_PASSWORD");
-        // system properties, for scripts and tests: -Djpm.publish.<id>.username=...
         if (user == null) user = System.getProperty("jpm.publish." + id + ".username");
         if (pass == null) pass = System.getProperty("jpm.publish." + id + ".password");
         if (user == null && pass == null) {
@@ -76,8 +75,6 @@ abstract class Repository {
         return HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL)
                 .proxy(ProxySelector.getDefault()).connectTimeout(Duration.ofSeconds(30)).build();
     }
-
-    // ---------------------------------------------------------------- Maven repository (HTTP or a folder)
 
     /** A Maven 2 layout repository: Reposilite, Nexus, Artifactory, GitHub Packages, or a file:// folder. */
     static final class Maven extends Repository {
@@ -197,11 +194,8 @@ abstract class Repository {
         String custom = System.getenv("JPM_PUBLISH_M2");
         Path repo = custom != null && !custom.isBlank() ? Path.of(custom)
                 : Path.of(System.getProperty("user.home"), ".m2", "repository");
-        // locally, republishing a version simply replaces it
         return new Maven("local", repo.toUri().toString(), true);
     }
-
-    // ---------------------------------------------------------------- Maven Central (Central Portal)
 
     /**
      * Maven Central through the Sonatype Central Portal publisher API: every module goes into one bundle
@@ -290,7 +284,6 @@ abstract class Repository {
             }
             Main.step("Uploaded", "deployment " + deployment + " (" + url + "/publishing/deployments)");
             if (!waitForIt) return;
-            // Validation takes a while; report how it ends.
             String state = "";
             for (int i = 0; i < 180; i++) {
                 try {
@@ -319,7 +312,6 @@ abstract class Repository {
                         }
                     }
                 } catch (IOException e) {
-                    // keep polling through brief network trouble
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
@@ -344,8 +336,6 @@ abstract class Repository {
             return out.toByteArray();
         }
     }
-
-    // ---------------------------------------------------------------- maven-metadata.xml
 
     static final class Metadata {
         private Metadata() {}

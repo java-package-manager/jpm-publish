@@ -44,12 +44,10 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                         Boolean.TRUE.equals(d.get("runtimeOnly")), (List<String>) d.getOrDefault("exclude", List.of()),
                         Boolean.TRUE.equals(d.get("api"))));
             }
-            // module settings override the root's, key by key
             Map<String, Object> settings = new LinkedHashMap<>(rootSettings);
             settings.putAll(map(map(m.get("extensions")).get("publish")));
             List<Path> cp = new ArrayList<>();
             for (Object p : (List<Object>) m.getOrDefault("compileClasspath", List.of())) cp.add(Path.of((String) p));
-            // jpm 0.8.1+: for a named module, the module path / class path split javac compiles it with
             Object opts = map(m.get("compileModule")).get("options");
             List<String> moduleOptions = opts instanceof List<?> l ? l.stream().map(Object::toString).toList() : null;
             Object rel = m.get("release");

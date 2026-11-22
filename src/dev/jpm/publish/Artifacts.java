@@ -81,12 +81,9 @@ final class Artifacts {
                 args.add(m.release().toString());
             }
             if (m.compileModuleOptions() != null) {
-                // as javac got them: jars that are not modules stay on the class path, since as automatic
-                // modules two sharing a package would stop javadoc
                 args.addAll(m.compileModuleOptions());
             } else if (!m.compileClasspath().isEmpty()) {
                 String cp = String.join(java.io.File.pathSeparator, m.compileClasspath().stream().map(Path::toString).toList());
-                // named modules take their dependencies from the module path
                 boolean modular = Files.exists(m.sourceDir().resolve("module-info.java"));
                 args.add(modular ? "--module-path" : "-classpath");
                 args.add(cp);
@@ -185,8 +182,6 @@ final class Artifacts {
         }
     }
 
-    // ---------------------------------------------------------------- signing
-
     /**
      * Signs files with gpg, writing an ASCII-armored .asc next to each. JPM_SIGNING_KEY picks the key (id or
      * fingerprint) and JPM_SIGNING_PASSWORD unlocks it; JPM_SIGNING_KEY_FILE imports an armored private key
@@ -200,13 +195,11 @@ final class Artifacts {
         Path home = null;
         try {
             if (keyFile != null && !keyFile.isBlank()) {
-                // A throwaway keyring. It lives in a short temp path: gpg-agent's socket must fit in ~100 bytes.
                 try {
                     home = Files.createTempDirectory("jpmgpg");
                     try {
                         Files.setPosixFilePermissions(home, java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"));
                     } catch (UnsupportedOperationException ignored) {
-                        // Windows: the temp folder is private to the user already
                     }
                 } catch (IOException e) {
                     throw new PublishException("Could not create a keyring folder: " + e.getMessage());
@@ -239,7 +232,6 @@ final class Artifacts {
                 try {
                     deleteTree(home);
                 } catch (PublishException ignored) {
-                    // the agent may still hold a socket for a moment; it is a temp folder either way
                 }
             }
         }

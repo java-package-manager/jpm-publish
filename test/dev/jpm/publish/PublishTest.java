@@ -278,7 +278,6 @@ class PublishTest {
         folder.publish(List.of(upload(dir, api)));
         assertTrue(Files.exists(repo.resolve("com/acme/api/1.2.0/api-1.2.0.pom.sha256")));
         assertThrows(PublishException.class, () -> folder.publish(List.of(upload(dir, api))));
-        // the local repository may be overwritten
         Repository.Maven local = new Repository.Maven("local", repo.toUri().toString(), true);
         local.publish(List.of(upload(dir, api)));
     }

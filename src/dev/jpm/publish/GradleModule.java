@@ -78,7 +78,6 @@ final class GradleModule {
         x.append("      \"attributes\": {\n");
         List<String> attrs = new ArrayList<>();
         for (String[] a : attributes) {
-            // org.gradle.jvm.version is a number in Gradle's own files
             String value = a[0].equals("org.gradle.jvm.version") ? a[1] : str(a[1]);
             attrs.add("        " + str(a[0]) + ": " + value);
         }
@@ -121,7 +120,6 @@ final class GradleModule {
             x.append(",\n          \"excludes\": [\n").append(String.join(",\n", ex)).append("\n          ]");
         }
         if (d.classifier() != null) {
-            // how Gradle itself refers to a classified jar of a module
             x.append(",\n          \"thirdPartyCompatibility\": {\n            \"artifactSelector\": {\n")
                     .append("              \"name\": ").append(str(d.artifact())).append(",\n")
                     .append("              \"type\": \"jar\",\n")

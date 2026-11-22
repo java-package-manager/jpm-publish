@@ -52,6 +52,9 @@ jobs:
           v=$("$HOME/.jpm/bin/jpm" --version | cut -d' ' -f2)
           printf '%s\n%s\n' "0.4.0" "$v" | sort -V -C || { echo "::error::jpm $v is too old; jpm-publish needs 0.4.0 or newer"; exit 1; }
 
+      - name: No comments in the sources
+        run: java checks/Comments.java check src test
+
       - name: Test
         run: jpm test --frozen
 
