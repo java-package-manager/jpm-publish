@@ -19,7 +19,7 @@ jobs:
       release: ${{ steps.decide.outputs.release }}
       version: ${{ steps.decide.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Decide whether to release
         id: decide
         run: |
@@ -38,7 +38,7 @@ jobs:
     needs: version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # jpm-publish talks to jpm over its protocol (`jpm api`), which is in canary builds until jpm 0.12.0
       - uses: java-package-manager/setup-jpm@v1
@@ -84,7 +84,7 @@ jobs:
     env:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Tag this commit with its version
         run: |
