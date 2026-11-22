@@ -164,7 +164,8 @@ public final class Comments {
                 continue;
             }
             try (Stream<Path> s = Files.walk(root)) {
-                s.filter(p -> (p.toString().endsWith(".java") || p.toString().endsWith(".kt")) && Files.isRegularFile(p))
+                s.filter(p -> (p.toString().endsWith(".java") || p.toString().endsWith(".kt"))
+                                && Files.isRegularFile(p))
                         .sorted()
                         .forEach(out::add);
             }
