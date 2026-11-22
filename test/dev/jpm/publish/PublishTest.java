@@ -1,5 +1,8 @@
 package dev.jpm.publish;
 
+import dev.jpm.api.client.Results;
+import dev.jpm.api.json.Jsonc;
+
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings("unchecked")
 class PublishTest {
     static final String INFO = """
-            { "infoVersion": 1, "projectDir": "/p", "name": "ws", "workspace": true,
+            { "dir": "/p", "name": "ws", "workspace": true,
               "extensions": { "publish": { "developers": [ { "name": "Dev" } ], "repositories": { "r": { "url": "https://r.example/releases" } } } },
               "modules": [
                 { "name": "api", "group": "com.acme", "version": "1.2.0", "dir": "/p/api", "url": "https://github.com/acme/ws",
@@ -54,7 +57,7 @@ class PublishTest {
             """;
 
     static Project project() {
-        return Project.from(Json.object(INFO));
+        return Project.from(Results.project((Map<String, Object>) Jsonc.parse(INFO)), Map.of());
     }
 
     @Test
@@ -119,7 +122,7 @@ class PublishTest {
         Path src = dir.resolve("api-1.2.0-sources.jar");
         Artifacts.write(src, "src".getBytes(StandardCharsets.UTF_8));
         String text = GradleModule.write(m, Pom.dependencies(p, m), new GradleModule.Files(jar, src, null));
-        Map<String, Object> json = Json.object(text);
+        Map<String, Object> json = (Map<String, Object>) Jsonc.parse(text);
         assertEquals("1.1", json.get("formatVersion"));
         assertEquals(Map.of("group", "com.acme", "module", "api", "version", "1.2.0",
                 "attributes", Map.of("org.gradle.status", "release")), json.get("component"));
@@ -146,13 +149,6 @@ class PublishTest {
         assertEquals(List.of(Map.of("group", "org.slf4j", "module", "slf4j-api")), simple.get("excludes"));
         Map<String, Object> lwjgl = (Map<String, Object>) ((List<Object>) byName.get("apiElements").get("dependencies")).get(1);
         assertEquals("natives-linux", ((Map<String, Object>) ((Map<String, Object>) lwjgl.get("thirdPartyCompatibility")).get("artifactSelector")).get("classifier"));
-    }
-
-    @Test
-    void readsJson() {
-        Map<String, Object> m = Json.object("{\"a\": [1, true, null, \"x\\u0041\\n\"], \"b\": {}}");
-        assertEquals(java.util.Arrays.asList(new java.math.BigDecimal(1), true, null, "xA\n"), m.get("a"));
-        assertThrows(IllegalArgumentException.class, () -> Json.parse("{\"a\": }"));
     }
 
     private static Repository.Upload upload(Path dir, Project.Module m) {

@@ -293,7 +293,7 @@ abstract class Repository {
                             .header("Authorization", "Bearer " + token)
                             .POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString());
                     if (r.statusCode() / 100 != 2) continue;
-                    Map<String, Object> s = Json.object(r.body());
+                    Map<String, Object> s = Project.map(dev.jpm.api.json.Jsonc.parse(r.body()));
                     String now = String.valueOf(s.get("deploymentState"));
                     if (!now.equals(state)) Main.step("Central", now.toLowerCase());
                     state = now;

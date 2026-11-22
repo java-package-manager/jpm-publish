@@ -10,16 +10,16 @@ It needs jpm and a JDK 21.
 ```sh
 jpm test
 jpm build
-JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-<version>.jar --dry-run
+JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project jpm start -- --dry-run
 java checks/Comments.java check src test     # the comment lint CI runs
 ```
 
 ## Rules for the code
 
-- No dependencies: the JDK only.
+- No dependencies besides jpm's client (`github:java-package-manager/jpm/api`).
 - No `//` or `/* */` comments ([docs/adr/0001](docs/adr/0001-decisions-live-in-adrs.md)). Decisions go
   into [docs/adr](docs/adr); Javadoc is fine.
-- jpm-publish reads projects through jpm (`jpm info --json` today, jpm's client jar once it exists), never
+- jpm-publish reads projects through jpm's protocol, with the client from `github:java-package-manager/jpm/api`, never
   by parsing `project.jsonc` or sources itself.
 - No stability before 1.0: options and settings may change in any release, with no deprecation period.
 

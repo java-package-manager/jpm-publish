@@ -4,8 +4,9 @@
 (Reposilite, Nexus, Artifactory, GitHub Packages, a folder), to your local `~/.m2`, or to **Maven Central**
 through the Sonatype Central Portal.
 
-It is a jpm extension: jpm runs `jpm publish` as `jpm-publish`. It needs jpm 0.4.0 or newer (for
-`jpm info --json`) and has no dependencies of its own.
+It is a jpm extension: jpm runs `jpm publish` as `jpm-publish`. It reads the project through jpm's
+protocol (`jpm api`), so it needs jpm 0.12.0 or newer; its one dependency is jpm's client,
+`github:java-package-manager/jpm/api`.
 
 ```sh
 jpm add -g github:java-package-manager/jpm-publish
@@ -105,7 +106,7 @@ missing. It uploads every module as one deployment, then waits for the Portal to
 ```sh
 jpm test
 jpm build
-JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project java -jar dist/jpm-publish-0.1.0.jar --dry-run
+JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project jpm start -- --dry-run
 ```
 
 ## Releasing

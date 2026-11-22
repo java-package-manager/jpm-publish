@@ -8,7 +8,10 @@
   "url": "https://github.com/java-package-manager/jpm-publish",
   "java": "21",
   "main": "dev.jpm.publish.Main",
-  "runtime": {},
+  "runtime": {
+    // the client of jpm's protocol, from jpm's own repository
+    "github:java-package-manager/jpm/api": "#main"
+  },
   "test": {
     "org.junit.jupiter:junit-jupiter": "5.11.4"
   }

@@ -1,5 +1,11 @@
 package dev.jpm.publish;
 
+import dev.jpm.api.client.JpmClient;
+import dev.jpm.api.client.JpmError;
+import dev.jpm.api.client.LoadOptions;
+import dev.jpm.api.client.ProtocolMismatch;
+import dev.jpm.api.model.Classpaths;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +19,7 @@ import java.util.Map;
  * {@code jpm publish}: publishes jpm modules to Maven repositories and Maven Central.
  *
  * <p>jpm runs it as an extension (any unknown command `jpm foo` runs `jpm-foo`). It reads the project with
- * {@code jpm info --json}, builds it with {@code jpm build}, and publishes each module with a group.
+ * jpm's protocol ({@code jpm api}), builds it with {@code jpm build}, and publishes each module with a group.
  */
 public final class Main {
     static final String VERSION = "0.1.0";
@@ -83,6 +89,20 @@ public final class Main {
     record Options(String repository, boolean local, List<String> modules, boolean dryRun, boolean build,
                    boolean sources, Boolean javadoc, Boolean sign, boolean waitForCentral) {}
 
+    /** The project, from the jpm that runs this extension, over jpm's protocol ({@code jpm api}). */
+    static Project load(String jpm, Path dir, boolean withClasspaths) {
+        try (JpmClient client = JpmClient.start(List.of(jpm, "api"), dir, Map.of(), "jpm-publish", VERSION)) {
+            dev.jpm.api.model.Project p = client.load(dir, LoadOptions.defaults());
+            Map<String, Classpaths> cps = withClasspaths ? client.classpaths(dir, List.of()) : Map.of();
+            return Project.from(p, cps);
+        } catch (ProtocolMismatch e) {
+            throw new PublishException(e.getMessage());
+        } catch (JpmError e) {
+            throw new PublishException(e.getMessage().contains("stopped") || e.getMessage().contains("could not be reached")
+                    ? "jpm-publish needs jpm 0.12.0 or newer (`jpm api`); run `jpm upgrade`" : e.getMessage());
+        }
+    }
+
     static Options parse(List<String> args) {
         String repo = null;
         boolean local = false, dry = false, build = true, sources = true, wait = true;
@@ -135,14 +155,7 @@ public final class Main {
             if (!b.ok()) throw new PublishException("jpm build failed:\n" + b.output().strip());
         }
         boolean wantJavadocAnywhere = o.javadoc() == null || o.javadoc();
-        List<String> infoCmd = new ArrayList<>(List.of(jpm, "info", "--json"));
-        if (wantJavadocAnywhere) infoCmd.add("--classpath");
-        Artifacts.Proc.Result r = Artifacts.Proc.run(dir, infoCmd);
-        if (!r.ok()) throw new PublishException("`jpm info --json` failed (jpm-publish needs jpm 0.4.0 or newer):\n" + r.output().strip());
-        String out = r.output();
-        int brace = out.indexOf('{');
-        if (brace < 0) throw new PublishException("`jpm info --json` printed no JSON:\n" + out.strip());
-        Project project = Project.from(Json.object(out.substring(brace)));
+        Project project = load(jpm, dir, wantJavadocAnywhere);
 
         Repository repo = repository(project, o);
         boolean central = repo instanceof Repository.Central;

@@ -10,17 +10,17 @@ Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CON
 | Tests | `jpm test` |
 | Build | `jpm build` |
 | Comment lint | `java checks/Comments.java check src test` |
-| Dry run on a project | `JPM_EXE=jpm JPM_PROJECT_DIR=<project> java -jar dist/jpm-publish-<version>.jar --dry-run` |
+| Dry run on a project | `JPM_EXE=jpm JPM_PROJECT_DIR=<project> jpm start -- --dry-run` |
 
 ## Where things live
 
-- `src/dev/jpm/publish/Main.java`: the command. `Project.java`: the project, read from `jpm info --json`.
+- `src/dev/jpm/publish/Main.java`: the command. `Project.java`: the project, read with jpm's client (`JpmClient`, `jpm api`).
 - `Pom.java`, `GradleModule.java`: what is published. `Artifacts.java`: jars, javadoc, signing.
 - `Repository.java`: Maven repositories and Maven Central. `test/dev/jpm/publish/PublishTest.java`: tests.
 
 ## Rules that must not be broken
 
-- No dependencies; no `//` or `/* */` comments (decisions go into `docs/adr`).
+- No dependencies besides jpm's client; no `//` or `/* */` comments (decisions go into `docs/adr`).
 - Read projects through jpm only.
 - Do not push, tag, or file issues without being asked.
 

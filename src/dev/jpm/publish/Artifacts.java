@@ -53,7 +53,7 @@ final class Artifacts {
 
     /** Runs the module JDK's javadoc and jars the result. */
     static Path javadocJar(Project.Module m, Path out, Path work) {
-        if (m.javaHome() == null) throw new PublishException(m.name() + ": no JDK for javadoc (jpm info gave no javaHome)");
+        if (m.javaHome() == null) throw new PublishException(m.name() + ": no JDK for javadoc (jpm found no JDK for it)");
         boolean win = System.getProperty("os.name").toLowerCase().contains("win");
         Path javadoc = m.javaHome().resolve("bin").resolve(win ? "javadoc.exe" : "javadoc");
         List<Path> sources = new ArrayList<>();

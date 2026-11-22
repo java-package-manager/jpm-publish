@@ -1,12 +1,14 @@
 package dev.jpm.publish;
 
+import dev.jpm.api.model.Classpaths;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** The project as `jpm info --json` describes it. */
+/** The project as jpm's protocol describes it (project/load and project/classpaths). */
 record Project(Path dir, String name, boolean workspace, Map<String, Object> settings, List<Module> modules) {
 
     record Dependency(String key, String kind, String scope, String spec, String resolved, String group,
@@ -27,52 +29,49 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
         }
     }
 
-    @SuppressWarnings("unchecked")
-    static Project from(Map<String, Object> info) {
-        Object v = info.get("infoVersion");
-        if (v == null) throw new PublishException("`jpm info --json` gave no infoVersion; jpm-publish needs jpm 0.4.0 or newer");
-        Map<String, Object> rootExt = map(info.get("extensions"));
-        Map<String, Object> rootSettings = map(rootExt.get("publish"));
+    static Project from(dev.jpm.api.model.Project p, Map<String, Classpaths> classpaths) {
+        Map<String, Object> rootSettings = map(p.extensions().get("publish"));
         List<Module> modules = new ArrayList<>();
-        for (Object o : (List<Object>) info.getOrDefault("modules", List.of())) {
-            Map<String, Object> m = (Map<String, Object>) o;
+        for (dev.jpm.api.model.Module m : p.modules()) {
             List<Dependency> deps = new ArrayList<>();
-            for (Object d0 : (List<Object>) m.getOrDefault("dependencies", List.of())) {
-                Map<String, Object> d = (Map<String, Object>) d0;
-                deps.add(new Dependency(str(d, "key"), str(d, "kind"), str(d, "scope"), str(d, "spec"), str(d, "resolved"),
-                        str(d, "group"), str(d, "artifact"), str(d, "classifier"), str(d, "version"),
-                        Boolean.TRUE.equals(d.get("runtimeOnly")), (List<String>) d.getOrDefault("exclude", List.of()),
-                        Boolean.TRUE.equals(d.get("api"))));
+            for (dev.jpm.api.model.Dependency d : m.dependencies()) {
+                String version = null, group = d.group(), artifact = d.artifact();
+                if (d.kind().equals("workspace")) {
+                    dev.jpm.api.model.Module sib = p.module(d.module());
+                    if (sib != null) {
+                        version = sib.version();
+                        group = sib.group();
+                        artifact = sib.name();
+                    }
+                }
+                deps.add(new Dependency(d.key(), d.kind(), d.scope(), d.spec(), d.resolved(), group, artifact, d.classifier(), version,
+                        d.runtimeOnly(), d.exclude(), d.api()));
             }
             Map<String, Object> settings = new LinkedHashMap<>(rootSettings);
-            settings.putAll(map(map(m.get("extensions")).get("publish")));
+            settings.putAll(map(m.extensions().get("publish")));
             List<Path> cp = new ArrayList<>();
-            for (Object p : (List<Object>) m.getOrDefault("compileClasspath", List.of())) cp.add(Path.of((String) p));
-            Object opts = map(m.get("compileModule")).get("options");
-            List<String> moduleOptions = opts instanceof List<?> l ? l.stream().map(Object::toString).toList() : null;
-            Object rel = m.get("release");
-            modules.add(new Module(str(m, "name"), str(m, "group"), str(m, "version"), path(m, "dir"), str(m, "visibility"),
-                    str(m, "description"), str(m, "license"), str(m, "url"), path(m, "sourceDir"), path(m, "resourceDir"),
-                    path(m, "jar"), path(m, "javaHome"), rel == null ? null : Integer.valueOf(rel.toString()), deps, settings, cp,
-                    moduleOptions));
+            Classpaths c = classpaths.get(m.name());
+            if (c != null) {
+                for (dev.jpm.api.model.Package pkg : c.compile()) {
+                    if (pkg.classes() != null) cp.add(pkg.classes());
+                    cp.addAll(pkg.jars());
+                }
+            }
+            List<String> moduleOptions = m.modulePath() == null ? null : m.modulePath().options();
+            modules.add(new Module(m.name(), m.group(), m.version(), m.dir(), m.visibility(), m.description(), m.license(), m.url(),
+                    first(m.folders().sources()), first(m.folders().resources()), m.jar(), m.jdk().home(), m.jdk().release(), deps,
+                    settings, cp, moduleOptions));
         }
-        return new Project(Path.of(str(info, "projectDir")), str(info, "name"), Boolean.TRUE.equals(info.get("workspace")),
-                rootSettings, modules);
+        return new Project(p.dir(), p.name(), p.workspace(), rootSettings, modules);
+    }
+
+    private static Path first(List<Path> paths) {
+        return paths.isEmpty() ? null : paths.get(0);
     }
 
     @SuppressWarnings("unchecked")
     static Map<String, Object> map(Object o) {
         return o instanceof Map ? (Map<String, Object>) o : Map.of();
-    }
-
-    private static String str(Map<String, Object> m, String k) {
-        Object v = m.get(k);
-        return v == null ? null : v.toString();
-    }
-
-    private static Path path(Map<String, Object> m, String k) {
-        String s = str(m, k);
-        return s == null ? null : Path.of(s);
     }
 
     /** A module's dependency on another module of this workspace, by name. */
