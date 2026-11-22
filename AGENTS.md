@@ -1,0 +1,30 @@
+# AGENTS.md
+
+Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/adr](docs/adr).
+
+## Commands
+
+| What | Command |
+|---|---|
+| Tests | `jpm test` |
+| Build | `jpm build` |
+| Comment lint | `java checks/Comments.java check src test` |
+| Dry run on a project | `JPM_EXE=jpm JPM_PROJECT_DIR=<project> java -jar dist/jpm-publish-<version>.jar --dry-run` |
+
+## Where things live
+
+- `src/dev/jpm/publish/Main.java`: the command. `Project.java`: the project, read from `jpm info --json`.
+- `Pom.java`, `GradleModule.java`: what is published. `Artifacts.java`: jars, javadoc, signing.
+- `Repository.java`: Maven repositories and Maven Central. `test/dev/jpm/publish/PublishTest.java`: tests.
+
+## Rules that must not be broken
+
+- No dependencies; no `//` or `/* */` comments (decisions go into `docs/adr`).
+- Read projects through jpm only.
+- Do not push, tag, or file issues without being asked.
+
+## Done means
+
+`jpm test` and the comment lint pass, the README describes user-facing changes, and the commit message
+says what changed and why.
