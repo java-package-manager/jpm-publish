@@ -106,14 +106,26 @@ abstract class Repository {
         void publish(List<Upload> uploads) {
             for (Upload u : uploads) {
                 Project.Module m = u.module();
+                Snapshot snap = m.snapshot() && !replaceable ? Snapshot.next(m, get(versionPath(m) + "/maven-metadata.xml"), ZonedDateTime.now(ZoneOffset.UTC)) : null;
                 for (Map.Entry<String, Path> f : u.files().entrySet()) {
                     byte[] data = Artifacts.read(f.getValue());
-                    put(f.getKey(), data, true);
+                    String path = f.getKey();
+                    if (snap != null) {
+                        path = snap.rename(path);
+                        if (path.endsWith(".module")) data = snap.rewriteModule(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+                    }
+                    put(path, data, true);
                     if (!f.getKey().endsWith(".asc")) {
                         for (Map.Entry<String, String> c : Artifacts.checksums(data).entrySet()) {
-                            put(f.getKey() + "." + c.getKey(), c.getValue().getBytes(StandardCharsets.UTF_8), false);
+                            put(path + "." + c.getKey(), c.getValue().getBytes(StandardCharsets.UTF_8), false);
                         }
                     }
+                }
+                if (snap != null) {
+                    byte[] xml = snap.metadata(u.files().keySet()).getBytes(StandardCharsets.UTF_8);
+                    String mp = versionPath(m) + "/maven-metadata.xml";
+                    put(mp, xml, false);
+                    for (Map.Entry<String, String> c : Artifacts.checksums(xml).entrySet()) put(mp + "." + c.getKey(), c.getValue().getBytes(StandardCharsets.UTF_8), false);
                 }
                 updateMetadata(m);
                 Main.step("Published", m.coordinates() + " to " + id);
@@ -334,6 +346,69 @@ abstract class Repository {
             out.writeBytes(data);
             out.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
             return out.toByteArray();
+        }
+    }
+
+    static String versionPath(Project.Module m) {
+        return groupPath(m) + "/" + m.version();
+    }
+
+    /**
+     * A unique snapshot upload, as {@code mvn deploy} makes: files are named {@code <artifact>-<base>-<timestamp>-<build>}
+     * and the version's maven-metadata.xml lists them, so repositories that refuse redeploys take every build.
+     */
+    record Snapshot(String artifact, String group, String version, String value, String timestamp, int build, String updated) {
+        static Snapshot next(Project.Module m, byte[] existing, ZonedDateTime now) {
+            int build = 0;
+            if (existing != null) {
+                Matcher b = Pattern.compile("<buildNumber>\\s*(\\d+)\\s*</buildNumber>").matcher(new String(existing, StandardCharsets.UTF_8));
+                if (b.find()) build = Integer.parseInt(b.group(1));
+            }
+            String ts = now.format(DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss"));
+            String base = m.version().substring(0, m.version().length() - "-SNAPSHOT".length());
+            return new Snapshot(m.name(), m.group(), m.version(), base + "-" + ts + "-" + (build + 1), ts, build + 1,
+                    now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        }
+
+        String rename(String path) {
+            int slash = path.lastIndexOf('/');
+            String file = path.substring(slash + 1), prefix = artifact + "-" + version;
+            return file.startsWith(prefix) ? path.substring(0, slash + 1) + artifact + "-" + value + file.substring(prefix.length()) : path;
+        }
+
+        String rewriteModule(String json) {
+            return json.replace("\"" + artifact + "-" + version, "\"" + artifact + "-" + value);
+        }
+
+        String metadata(java.util.Collection<String> paths) {
+            StringBuilder x = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<metadata modelVersion=\"1.1.0\">\n");
+            x.append("  <groupId>").append(Pom.xml(group)).append("</groupId>\n");
+            x.append("  <artifactId>").append(Pom.xml(artifact)).append("</artifactId>\n");
+            x.append("  <version>").append(Pom.xml(version)).append("</version>\n");
+            x.append("  <versioning>\n    <snapshot>\n      <timestamp>").append(timestamp).append("</timestamp>\n      <buildNumber>")
+                    .append(build).append("</buildNumber>\n    </snapshot>\n");
+            x.append("    <lastUpdated>").append(updated).append("</lastUpdated>\n    <snapshotVersions>\n");
+            String prefix = artifact + "-" + version;
+            for (String p : paths) {
+                String file = p.substring(p.lastIndexOf('/') + 1);
+                if (!file.startsWith(prefix) || file.endsWith(".asc")) continue;
+                String rest = file.substring(prefix.length());
+                String classifier = null, ext;
+                if (rest.startsWith("-")) {
+                    int dot = rest.indexOf('.');
+                    classifier = rest.substring(1, dot);
+                    ext = rest.substring(dot + 1);
+                } else {
+                    ext = rest.substring(1);
+                }
+                x.append("      <snapshotVersion>\n");
+                if (classifier != null) x.append("        <classifier>").append(Pom.xml(classifier)).append("</classifier>\n");
+                x.append("        <extension>").append(Pom.xml(ext)).append("</extension>\n");
+                x.append("        <value>").append(Pom.xml(value)).append("</value>\n");
+                x.append("        <updated>").append(updated).append("</updated>\n      </snapshotVersion>\n");
+            }
+            x.append("    </snapshotVersions>\n  </versioning>\n</metadata>\n");
+            return x.toString();
         }
     }
 

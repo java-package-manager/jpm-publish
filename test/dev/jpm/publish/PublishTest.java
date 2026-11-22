@@ -199,6 +199,41 @@ class PublishTest {
     }
 
     @Test
+    void uploadsEachSnapshotUnderItsOwnName(@TempDir Path dir) {
+        Project.Module a = project().module("api");
+        Project.Module m = new Project.Module(a.name(), a.group(), "1.3.0-SNAPSHOT", a.dir(), a.visibility(), a.description(), a.license(), a.url(),
+                a.sourceDir(), a.resourceDir(), a.jar(), a.javaHome(), a.release(), a.dependencies(), a.settings(), a.compileClasspath(),
+                a.compileModuleOptions());
+        Path repo = dir.resolve("repo");
+        String base = Repository.groupPath(m) + "/1.3.0-SNAPSHOT/api-1.3.0-SNAPSHOT";
+        Map<String, Path> files = new LinkedHashMap<>();
+        for (String ext : List.of(".jar", "-sources.jar", ".pom", ".module")) {
+            Path f = dir.resolve("f" + ext);
+            Artifacts.write(f, (ext.equals(".module") ? "{ \"url\": \"api-1.3.0-SNAPSHOT.jar\", \"version\": \"1.3.0-SNAPSHOT\" }" : "x")
+                    .getBytes(StandardCharsets.UTF_8));
+            files.put(base + ext, f);
+        }
+        Repository.Maven maven = new Repository.Maven("test", repo.toUri().toString());
+        maven.publish(List.of(new Repository.Upload(m, files)));
+        maven.publish(List.of(new Repository.Upload(m, files)));
+        Path version = repo.resolve("com/acme/api/1.3.0-SNAPSHOT");
+        String meta = new String(Artifacts.read(version.resolve("maven-metadata.xml")), StandardCharsets.UTF_8);
+        assertTrue(meta.contains("<buildNumber>2</buildNumber>"), meta);
+        java.util.regex.Matcher v = java.util.regex.Pattern.compile("<value>(1\\.3\\.0-\\d{8}\\.\\d{6}-2)</value>").matcher(meta);
+        assertTrue(v.find(), meta);
+        String unique = v.group(1);
+        assertTrue(meta.contains("<classifier>sources</classifier>"), meta);
+        assertTrue(meta.contains("<extension>module</extension>"), meta);
+        assertTrue(java.nio.file.Files.exists(version.resolve("api-" + unique + ".jar")));
+        assertTrue(java.nio.file.Files.exists(version.resolve("api-" + unique + "-sources.jar.sha1")));
+        assertTrue(java.nio.file.Files.notExists(version.resolve("api-1.3.0-SNAPSHOT.jar")), "no file under the plain snapshot name");
+        String module = new String(Artifacts.read(version.resolve("api-" + unique + ".module")), StandardCharsets.UTF_8);
+        assertTrue(module.contains("\"api-" + unique + ".jar\"") && module.contains("\"version\": \"1.3.0-SNAPSHOT\""), module);
+        assertTrue(new String(Artifacts.read(repo.resolve("com/acme/api/maven-metadata.xml")), StandardCharsets.UTF_8)
+                .contains("<version>1.3.0-SNAPSHOT</version>"));
+    }
+
+    @Test
     void explainsRefusedCredentials(@TempDir Path dir) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", ex -> {
