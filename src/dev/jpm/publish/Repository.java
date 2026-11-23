@@ -27,9 +27,13 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/** Where artifacts go. */
+/**
+ * Where artifacts go.
+ */
 abstract class Repository {
-    /** One module's files: path inside the repository (group/artifact/version/file) to local file. */
+    /**
+     * One module's files: path inside the repository (group/artifact/version/file) to local file.
+     */
     record Upload(Project.Module module, Map<String, Path> files) {}
 
     final String id;
@@ -46,7 +50,9 @@ abstract class Repository {
         return m.group().replace('.', '/') + "/" + m.name();
     }
 
-    /** Credentials from JPM_PUBLISH_<ID>_USERNAME/PASSWORD, falling back to JPM_PUBLISH_USERNAME/PASSWORD. */
+    /**
+     * Credentials from JPM_PUBLISH_<ID>_USERNAME/PASSWORD, falling back to JPM_PUBLISH_USERNAME/PASSWORD.
+     */
     static String[] credentials(String id) {
         String key = id.toUpperCase().replaceAll("[^A-Z0-9]", "_");
         String user = env("JPM_PUBLISH_" + key + "_USERNAME");
@@ -76,12 +82,16 @@ abstract class Repository {
                 .proxy(ProxySelector.getDefault()).connectTimeout(Duration.ofSeconds(30)).build();
     }
 
-    /** A Maven 2 layout repository: Reposilite, Nexus, Artifactory, GitHub Packages, or a file:// folder. */
+    /**
+     * A Maven 2 layout repository: Reposilite, Nexus, Artifactory, GitHub Packages, or a file:// folder.
+     */
     static final class Maven extends Repository {
         final String url;
         private final HttpClient http;
         private final String auth;
-        /** Whether a published version may be overwritten (only the local repository). */
+        /**
+         * Whether a published version may be overwritten (only the local repository).
+         */
         private final boolean replaceable;
 
         Maven(String id, String url) {
@@ -132,7 +142,9 @@ abstract class Repository {
             }
         }
 
-        /** Adds the version to the artifact's maven-metadata.xml. */
+        /**
+         * Adds the version to the artifact's maven-metadata.xml.
+         */
         void updateMetadata(Project.Module m) {
             String path = groupPath(m) + "/maven-metadata.xml";
             byte[] existing = get(path);
@@ -201,7 +213,9 @@ abstract class Repository {
         }
     }
 
-    /** The local Maven repository (~/.m2/repository), so other builds on this machine can use the artifacts. */
+    /**
+     * The local Maven repository (~/.m2/repository), so other builds on this machine can use the artifacts.
+     */
     static Maven local() {
         String custom = System.getenv("JPM_PUBLISH_M2");
         Path repo = custom != null && !custom.isBlank() ? Path.of(custom)
@@ -262,6 +276,7 @@ abstract class Repository {
         }
 
         @Override
+        @SuppressWarnings("BusyWait")
         void publish(List<Upload> uploads) {
             String[] c = credentials(id);
             if (c == null) {
@@ -301,7 +316,7 @@ abstract class Repository {
                 try {
                     Thread.sleep(i == 0 ? 3000 : 10000);
                     HttpResponse<String> r = http.send(HttpRequest.newBuilder(URI.create(url + "/api/v1/publisher/status?id="
-                                    + URLEncoder.encode(deployment, StandardCharsets.UTF_8))).timeout(Duration.ofMinutes(1))
+                            + URLEncoder.encode(deployment, StandardCharsets.UTF_8))).timeout(Duration.ofMinutes(1))
                             .header("Authorization", "Bearer " + token)
                             .POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString());
                     if (r.statusCode() / 100 != 2) continue;
@@ -323,7 +338,7 @@ abstract class Repository {
                         default -> {
                         }
                     }
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
@@ -413,11 +428,14 @@ abstract class Repository {
     }
 
     static final class Metadata {
-        private Metadata() {}
+        private Metadata() {
+        }
 
         private static final Pattern VERSION = Pattern.compile("<version>\\s*([^<\\s]+)\\s*</version>");
 
-        /** The artifact-level metadata with the version added (versions keep their order; release/latest updated). */
+        /**
+         * The artifact-level metadata with the version added (versions keep their order; release/latest updated).
+         */
         static String merge(String existing, String group, String artifact, String version, ZonedDateTime now) {
             List<String> versions = new ArrayList<>();
             if (existing != null) {

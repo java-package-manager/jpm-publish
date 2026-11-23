@@ -1,9 +1,8 @@
 package dev.jpm.publish;
 
+import com.sun.net.httpserver.HttpServer;
 import dev.jpm.api.client.Results;
 import dev.jpm.api.json.Jsonc;
-
-import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

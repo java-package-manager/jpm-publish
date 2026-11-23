@@ -3,7 +3,6 @@ package dev.jpm.publish;
 import dev.jpm.api.client.JpmClient;
 import dev.jpm.api.client.JpmError;
 import dev.jpm.api.client.LoadOptions;
-import dev.jpm.api.client.ProtocolMismatch;
 import dev.jpm.api.model.Classpaths;
 
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,9 @@ import java.util.Map;
  * jpm's protocol ({@code jpm api}), builds it with {@code jpm build}, and publishes each module with a group.
  */
 public final class Main {
-    /** The version in project.jsonc, from the {@code BuildConfig} class jpm generates ({@code "defineClass"}). */
+    /**
+     * The version in project.jsonc, from the {@code BuildConfig} class jpm generates ({@code "defineClass"}).
+     */
     static final String VERSION = BuildConfig.VERSION;
 
     static final String HELP = """
@@ -61,7 +62,8 @@ public final class Main {
               JPM_SIGNING_KEY_FILE                            armored private key to import (CI)
             """;
 
-    private Main() {}
+    private Main() {
+    }
 
     static void step(String verb, String msg) {
         System.err.println(String.format("%12s", verb) + " " + msg);
@@ -80,24 +82,26 @@ public final class Main {
             code = 1;
         } catch (RuntimeException e) {
             System.err.println("error: unexpected failure: " + e);
-            if (System.getenv("JPM_VERBOSE") != null) e.printStackTrace();
+            if (System.getenv("JPM_VERBOSE") != null) e.printStackTrace(System.err);
             code = 70;
         }
         System.exit(code);
     }
 
-    /** Options of one run. */
+    /**
+     * Options of one run.
+     */
     record Options(String repository, boolean local, List<String> modules, boolean dryRun, boolean build,
                    boolean sources, Boolean javadoc, Boolean sign, boolean waitForCentral) {}
 
-    /** The project, from the jpm that runs this extension, over jpm's protocol ({@code jpm api}). */
+    /**
+     * The project, from the jpm that runs this extension, over jpm's protocol ({@code jpm api}).
+     */
     static Project load(String jpm, Path dir, boolean withClasspaths) {
         try (JpmClient client = JpmClient.start(List.of(jpm, "api"), dir, Map.of(), "jpm-publish", VERSION)) {
             dev.jpm.api.model.Project p = client.load(dir, LoadOptions.defaults());
             Map<String, Classpaths> cps = withClasspaths ? client.classpaths(dir, List.of()) : Map.of();
             return Project.from(p, cps);
-        } catch (ProtocolMismatch e) {
-            throw new PublishException(e.getMessage());
         } catch (JpmError e) {
             throw new PublishException(e.getMessage());
         }
@@ -197,7 +201,9 @@ public final class Main {
         return v == null || v.isBlank() ? def : v;
     }
 
-    /** Builds a module's files in the staging folder, keyed by their path in the repository. */
+    /**
+     * Builds a module's files in the staging folder, keyed by their path in the repository.
+     */
     static Repository.Upload stage(Project project, Project.Module m, Options o, boolean central, Path staging) {
         Path work = staging.resolve(m.name());
         String base = Artifacts.base(m);
@@ -247,7 +253,9 @@ public final class Main {
         Artifacts.write(to, Artifacts.read(from));
     }
 
-    /** The repository to publish to. */
+    /**
+     * The repository to publish to.
+     */
     @SuppressWarnings("unchecked")
     static Repository repository(Project project, Options o) {
         if (o.local()) return Repository.local();
@@ -283,7 +291,9 @@ public final class Main {
         return new Repository.Maven(name, url);
     }
 
-    /** The modules to publish: those named with --module, else every module with a group that is not skipped. */
+    /**
+     * The modules to publish: those named with --module, else every module with a group that is not skipped.
+     */
     static List<Project.Module> select(Project project, Options o) {
         List<Project.Module> out = new ArrayList<>();
         if (!o.modules().isEmpty()) {

@@ -104,7 +104,8 @@ missing. It uploads every module as one deployment, then waits for the Portal to
 ## Developing
 
 ```sh
-jpm test
+jpm check     # the checks (jpm-format's formatting and lint among them), then the tests, as CI runs them
+jpm format    # format the sources with jpm-format
 jpm build
 JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project jpm start -- --dry-run
 ```

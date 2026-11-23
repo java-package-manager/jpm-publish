@@ -13,7 +13,8 @@ import java.util.Map;
  * was tested. Modules of the same workspace refer to each other by their coordinates.
  */
 final class Pom {
-    private Pom() {}
+    private Pom() {
+    }
 
     private static final Map<String, String[]> LICENSES = Map.ofEntries(
             Map.entry("Apache-2.0", new String[]{"Apache License, Version 2.0", "https://www.apache.org/licenses/LICENSE-2.0"}),
@@ -39,7 +40,9 @@ final class Pom {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
-    /** Dependencies as they appear in the POM: {group, artifact, version, classifier, scope}, plus exclusions. */
+    /**
+     * Dependencies as they appear in the POM: {group, artifact, version, classifier, scope}, plus exclusions.
+     */
     record Dep(String group, String artifact, String version, String classifier, String scope, List<String> exclusions) {}
 
     static List<Dep> dependencies(Project project, Project.Module m) {
@@ -157,7 +160,9 @@ final class Pom {
         x.append(indent).append('<').append(name).append('>').append(xml(value)).append("</").append(name).append(">\n");
     }
 
-    /** What Maven Central requires, as a list of what is missing (empty when the POM qualifies). */
+    /**
+     * What Maven Central requires, as a list of what is missing (empty when the POM qualifies).
+     */
     @SuppressWarnings("unchecked")
     static List<String> centralProblems(Project.Module m) {
         List<String> p = new ArrayList<>();

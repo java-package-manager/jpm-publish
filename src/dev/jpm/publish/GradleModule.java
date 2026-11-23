@@ -19,9 +19,12 @@ import java.util.Map;
  * Gradle and jpm read it; Maven reads the POM.
  */
 final class GradleModule {
-    private GradleModule() {}
+    private GradleModule() {
+    }
 
-    /** The published jar, sources jar and javadoc jar, each null when not published. */
+    /**
+     * The published jar, sources jar and javadoc jar, each null when not published.
+     */
     record Files(Path jar, Path sources, Path javadoc) {}
 
     static String write(Project.Module m, List<Pom.Dep> deps, Files files) {
