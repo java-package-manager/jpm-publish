@@ -36,5 +36,8 @@
   },
   "test": {
     "org.junit.jupiter:junit-jupiter": "5.11.4"
+  },
+  "extensions": {
+    "github:java-package-manager/jpm-format": "^0.3.1"
   }
 }

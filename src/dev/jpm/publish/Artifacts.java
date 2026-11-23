@@ -20,21 +20,30 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.stream.Stream;
 
-/** Builds the files that go next to the jar: POM, sources and javadoc jars, checksums and signatures. */
+/**
+ * Builds the files that go next to the jar: POM, sources and javadoc jars, checksums and signatures.
+ */
 final class Artifacts {
-    private Artifacts() {}
+    private Artifacts() {
+    }
 
-    /** One file to publish, named the Maven way: artifact-version[-classifier].extension. */
+    /**
+     * One file to publish, named the Maven way: artifact-version[-classifier].extension.
+     */
     record File(String name, Path path) {}
 
-    /** The 1980 timestamp jars use for reproducible builds. */
+    /**
+     * The 1980 timestamp jars use for reproducible builds.
+     */
     private static final long EPOCH = 315532800000L + 31L * 24 * 3600 * 1000;
 
     static String base(Project.Module m) {
         return m.name() + "-" + m.version();
     }
 
-    /** A jar of a module's sources and resources. */
+    /**
+     * A jar of a module's sources and resources.
+     */
     static Path sourcesJar(Project.Module m, Path out) {
         Map<String, Path> entries = new TreeMap<>();
         for (Path root : new Path[]{m.sourceDir(), m.resourceDir()}) {
@@ -51,7 +60,9 @@ final class Artifacts {
         return out;
     }
 
-    /** Runs the module JDK's javadoc and jars the result. */
+    /**
+     * Runs the module JDK's javadoc and jars the result.
+     */
     static Path javadocJar(Project.Module m, Path out, Path work) {
         if (m.javaHome() == null) throw new PublishException(m.name() + ": no JDK for javadoc (jpm found no JDK for it)");
         boolean win = System.getProperty("os.name").toLowerCase().contains("win");
@@ -136,7 +147,9 @@ final class Artifacts {
         }
     }
 
-    /** Checksums Maven repositories expect next to each file. */
+    /**
+     * Checksums Maven repositories expect next to each file.
+     */
     static final List<String[]> CHECKSUMS = List.of(
             new String[]{"md5", "MD5"}, new String[]{"sha1", "SHA-1"}, new String[]{"sha256", "SHA-256"}, new String[]{"sha512", "SHA-512"});
 
@@ -237,10 +250,14 @@ final class Artifacts {
         }
     }
 
-    /** Small process helper. */
+    /**
+     * Small process helper.
+     */
     static final class Proc {
         record Result(int exit, String output) {
-            boolean ok() { return exit == 0; }
+            boolean ok() {
+                return exit == 0;
+            }
         }
 
         static Result run(Path dir, List<String> cmd) {

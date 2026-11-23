@@ -7,7 +7,9 @@ Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CON
 
 | What | Command |
 |---|---|
+| Checks (jpm-format's formatting and lint among them), then the tests, as CI runs them | `jpm check` |
 | Tests | `jpm test` |
+| Format | `jpm format` |
 | Build | `jpm build` |
 | Comment lint | `java checks/Comments.java check src test` |
 | Dry run on a project | `JPM_EXE=jpm JPM_PROJECT_DIR=<project> jpm start -- --dry-run` |
@@ -26,5 +28,5 @@ Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CON
 
 ## Done means
 
-`jpm test` and the comment lint pass, the README describes user-facing changes, and the commit message
+`jpm check` and the comment lint pass, the README describes user-facing changes, and the commit message
 says what changed and why.

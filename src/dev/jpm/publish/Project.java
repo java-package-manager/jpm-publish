@@ -8,7 +8,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** The project as jpm's protocol describes it (project/load and project/classpaths). */
+/**
+ * The project as jpm's protocol describes it (project/load and project/classpaths).
+ */
 record Project(Path dir, String name, boolean workspace, Map<String, Object> settings, List<Module> modules) {
 
     record Dependency(String key, String kind, String scope, String spec, String resolved, String group,
@@ -74,7 +76,9 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
         return o instanceof Map ? (Map<String, Object>) o : Map.of();
     }
 
-    /** A module's dependency on another module of this workspace, by name. */
+    /**
+     * A module's dependency on another module of this workspace, by name.
+     */
     Module module(String name) {
         for (Module m : modules) if (m.name().equals(name)) return m;
         return null;

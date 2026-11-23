@@ -8,7 +8,8 @@ plan for jpm and its extensions is jpm's [ROADMAP.md](https://github.com/java-pa
 It needs jpm and a JDK 21.
 
 ```sh
-jpm test
+jpm check     # the checks (jpm-format's formatting and lint among them), then the tests, as CI runs them
+jpm format    # format the sources with jpm-format
 jpm build
 JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project jpm start -- --dry-run
 java checks/Comments.java check src test     # the comment lint CI runs

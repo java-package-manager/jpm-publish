@@ -48,8 +48,9 @@ jobs:
       - name: No comments in the sources
         run: java checks/Comments.java check src test
 
-      - name: Test
-        run: jpm test --frozen
+      # every check, jpm-format's formatting and lint among them, then the tests
+      - name: Check
+        run: jpm check --frozen
 
       - name: Build
         run: jpm build
