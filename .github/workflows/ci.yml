@@ -45,9 +45,6 @@ jobs:
         with:
           java: "21"
 
-      - name: No comments in the sources
-        run: java checks/Comments.java check src test
-
       # every check, jpm-format's formatting and lint among them, then the tests
       - name: Check
         run: jpm check --frozen

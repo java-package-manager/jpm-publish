@@ -11,7 +11,6 @@ Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CON
 | Tests | `jpm test` |
 | Format | `jpm format` |
 | Build | `jpm build` |
-| Comment lint | `java checks/Comments.java check src test` |
 | Dry run on a project | `JPM_EXE=jpm JPM_PROJECT_DIR=<project> jpm start -- --dry-run` |
 
 ## Where things live
@@ -28,5 +27,5 @@ Facts for AI agents working on jpm-publish. Reasons are in [CONTRIBUTING.md](CON
 
 ## Done means
 
-`jpm check` and the comment lint pass, the README describes user-facing changes, and the commit message
+`jpm check` (which includes the comment lint) passes, the README describes user-facing changes, and the commit message
 says what changed and why.

@@ -12,7 +12,6 @@ jpm check     # the checks (jpm-format's formatting and lint among them), then t
 jpm format    # format the sources with jpm-format
 jpm build
 JPM_EXE=jpm JPM_PROJECT_DIR=/path/to/a/project jpm start -- --dry-run
-java checks/Comments.java check src test     # the comment lint CI runs
 ```
 
 ## Rules for the code
