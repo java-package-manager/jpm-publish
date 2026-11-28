@@ -14,7 +14,7 @@
     "description": "Publish jpm modules to Maven repositories and Maven Central",
     "commands": {
       "publish": {
-        "description": "Publish every module with a \"group\" to a repository from extensions.publish.repositories, or a URL",
+        "description": "Publish every module with a \"group\" to a repository from \"repositories\" in jpm-publish.jsonc, or a URL",
         "options": {
           "--local": { "description": "Publish to the local Maven repository (~/.m2/repository)" },
           "--module": { "argument": "name", "description": "Publish only this module (repeatable)" },
@@ -38,10 +38,6 @@
     "org.junit.jupiter:junit-jupiter": "5.11.4"
   },
   "extensions": {
-    "github:java-package-manager/jpm-format": "^0.4.0",
-    "format": {
-      // no // or /* */ comments: decisions go into docs/adr (ADR 0001), explanations into Javadoc
-      "linter": { "rules": { "style": { "NonJavadocComment": "error" } } }
-    }
+    "github:java-package-manager/jpm-format": "^0.4.0"
   }
 }

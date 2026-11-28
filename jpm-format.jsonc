@@ -1,0 +1,4 @@
+// no // or /* */ comments: decisions go into docs/adr (ADR 0001), explanations into Javadoc
+{
+  "linter": { "rules": { "style": { "NonJavadocComment": "error" } } }
+}
