@@ -34,7 +34,8 @@ abstract class Repository {
     /**
      * One module's files: path inside the repository (group/artifact/version/file) to local file.
      */
-    record Upload(Project.Module module, Map<String, Path> files) {}
+    record Upload(Project.Module module, Map<String, Path> files) {
+    }
 
     final String id;
 
@@ -122,7 +123,8 @@ abstract class Repository {
                     String path = f.getKey();
                     if (snap != null) {
                         path = snap.rename(path);
-                        if (path.endsWith(".module")) data = snap.rewriteModule(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+                        if (path.endsWith(".module"))
+                            data = snap.rewriteModule(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
                     }
                     put(path, data, true);
                     if (!f.getKey().endsWith(".asc")) {
@@ -135,7 +137,8 @@ abstract class Repository {
                     byte[] xml = snap.metadata(u.files().keySet()).getBytes(StandardCharsets.UTF_8);
                     String mp = versionPath(m) + "/maven-metadata.xml";
                     put(mp, xml, false);
-                    for (Map.Entry<String, String> c : Artifacts.checksums(xml).entrySet()) put(mp + "." + c.getKey(), c.getValue().getBytes(StandardCharsets.UTF_8), false);
+                    for (Map.Entry<String, String> c : Artifacts.checksums(xml).entrySet())
+                        put(mp + "." + c.getKey(), c.getValue().getBytes(StandardCharsets.UTF_8), false);
                 }
                 updateMetadata(m);
                 Main.step("Published", m.coordinates() + " to " + id);
@@ -167,7 +170,8 @@ abstract class Repository {
             try {
                 HttpResponse<byte[]> r = http.send(b.build(), HttpResponse.BodyHandlers.ofByteArray());
                 if (r.statusCode() == 404) return null;
-                if (r.statusCode() / 100 != 2) throw new PublishException("GET " + url + "/" + path + " failed: HTTP " + r.statusCode() + hint(r.statusCode()));
+                if (r.statusCode() / 100 != 2)
+                    throw new PublishException("GET " + url + "/" + path + " failed: HTTP " + r.statusCode() + hint(r.statusCode()));
                 return r.body();
             } catch (IOException e) {
                 throw new PublishException("GET " + url + "/" + path + " failed: " + e.getMessage());
@@ -205,7 +209,8 @@ abstract class Repository {
 
         private String hint(int code) {
             return switch (code) {
-                case 401 -> auth == null ? " (no credentials: set " + credentialHint(id) + ")" : " (the credentials were refused)";
+                case 401 ->
+                        auth == null ? " (no credentials: set " + credentialHint(id) + ")" : " (the credentials were refused)";
                 case 403 -> " (these credentials may not publish here)";
                 case 409 -> " (the version may already be published; release versions cannot be replaced)";
                 default -> "";
@@ -325,7 +330,8 @@ abstract class Repository {
                     if (!now.equals(state)) Main.step("Central", now.toLowerCase());
                     state = now;
                     switch (now) {
-                        case "FAILED" -> throw new PublishException("Maven Central rejected the deployment:\n" + errors(s.get("errors")));
+                        case "FAILED" ->
+                                throw new PublishException("Maven Central rejected the deployment:\n" + errors(s.get("errors")));
                         case "PUBLISHED" -> {
                             return;
                         }
@@ -372,7 +378,8 @@ abstract class Repository {
      * A unique snapshot upload, as {@code mvn deploy} makes: files are named {@code <artifact>-<base>-<timestamp>-<build>}
      * and the version's maven-metadata.xml lists them, so repositories that refuse redeploys take every build.
      */
-    record Snapshot(String artifact, String group, String version, String value, String timestamp, int build, String updated) {
+    record Snapshot(String artifact, String group, String version, String value, String timestamp, int build,
+                    String updated) {
         static Snapshot next(Project.Module m, byte[] existing, ZonedDateTime now) {
             int build = 0;
             if (existing != null) {
@@ -417,7 +424,8 @@ abstract class Repository {
                     ext = rest.substring(1);
                 }
                 x.append("      <snapshotVersion>\n");
-                if (classifier != null) x.append("        <classifier>").append(Pom.xml(classifier)).append("</classifier>\n");
+                if (classifier != null)
+                    x.append("        <classifier>").append(Pom.xml(classifier)).append("</classifier>\n");
                 x.append("        <extension>").append(Pom.xml(ext)).append("</extension>\n");
                 x.append("        <value>").append(Pom.xml(value)).append("</value>\n");
                 x.append("        <updated>").append(updated).append("</updated>\n      </snapshotVersion>\n");

@@ -38,6 +38,6 @@
     "org.junit.jupiter:junit-jupiter": "5.11.4"
   },
   "extensions": {
-    "github:java-package-manager/jpm-format": "^0.4.0"
+    "github:java-package-manager/jpm-format": "^0.8.1"
   }
 }

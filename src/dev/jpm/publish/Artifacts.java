@@ -30,7 +30,8 @@ final class Artifacts {
     /**
      * One file to publish, named the Maven way: artifact-version[-classifier].extension.
      */
-    record File(String name, Path path) {}
+    record File(String name, Path path) {
+    }
 
     /**
      * The 1980 timestamp jars use for reproducible builds.
@@ -50,7 +51,8 @@ final class Artifacts {
             if (root == null || !Files.isDirectory(root)) continue;
             try (Stream<Path> s = Files.walk(root)) {
                 for (Path p : (Iterable<Path>) s::iterator) {
-                    if (Files.isRegularFile(p)) entries.putIfAbsent(root.relativize(p).toString().replace('\\', '/'), p);
+                    if (Files.isRegularFile(p))
+                        entries.putIfAbsent(root.relativize(p).toString().replace('\\', '/'), p);
                 }
             } catch (IOException e) {
                 throw new PublishException("Could not read " + root + ": " + e.getMessage());
@@ -64,7 +66,8 @@ final class Artifacts {
      * Runs the module JDK's javadoc and jars the result.
      */
     static Path javadocJar(Project.Module m, Path out, Path work) {
-        if (m.javaHome() == null) throw new PublishException(m.name() + ": no JDK for javadoc (jpm found no JDK for it)");
+        if (m.javaHome() == null)
+            throw new PublishException(m.name() + ": no JDK for javadoc (jpm found no JDK for it)");
         boolean win = System.getProperty("os.name").toLowerCase().contains("win");
         Path javadoc = m.javaHome().resolve("bin").resolve(win ? "javadoc.exe" : "javadoc");
         List<Path> sources = new ArrayList<>();
@@ -222,7 +225,8 @@ final class Artifacts {
                 if (pass != null) imp.addAll(List.of("--pinentry-mode", "loopback", "--passphrase-fd", "0"));
                 imp.addAll(List.of("--import", keyFile));
                 Proc.Result r = Proc.run(work, imp, env, pass);
-                if (!r.ok()) throw new PublishException("Could not import the signing key from " + keyFile + ":\n" + r.output().strip());
+                if (!r.ok())
+                    throw new PublishException("Could not import the signing key from " + keyFile + ":\n" + r.output().strip());
             }
             List<Path> out = new ArrayList<>();
             for (Path f : files) {

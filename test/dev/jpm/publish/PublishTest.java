@@ -134,7 +134,8 @@ class PublishTest {
             Map<String, Object> v = (Map<String, Object>) o;
             byName.put((String) v.get("name"), v);
             List<String> names = new ArrayList<>();
-            for (Object d : (List<Object>) v.getOrDefault("dependencies", List.of())) names.add((String) ((Map<String, Object>) d).get("module"));
+            for (Object d : (List<Object>) v.getOrDefault("dependencies", List.of()))
+                names.add((String) ((Map<String, Object>) d).get("module"));
             deps.put((String) v.get("name"), names);
         }
         assertEquals(List.of("apiElements", "runtimeElements", "sourcesElements"), List.copyOf(byName.keySet()));

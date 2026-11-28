@@ -1,4 +1,6 @@
-// no // or /* */ comments: decisions go into docs/adr (ADR 0001), explanations into Javadoc
 {
+  // Markdown keeps its hand-made line breaks
+  "files": [{ "include": ["**/*.md"], "steps": [] }],
+  // no // or /* */ comments: decisions go into docs/adr (ADR 0001), explanations into Javadoc
   "linter": { "rules": { "style": { "NonJavadocComment": "error" } } }
 }

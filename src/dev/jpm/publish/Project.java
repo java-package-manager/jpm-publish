@@ -22,10 +22,12 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
 
     record Dependency(String key, String kind, String scope, String spec, String resolved, String group,
                       String artifact, String classifier, String version, boolean runtimeOnly, List<String> exclude,
-                      boolean api) {}
+                      boolean api) {
+    }
 
     record Module(String name, String group, String version, Path dir, String visibility, String description,
-                  String license, String url, Path sourceDir, Path resourceDir, Path jar, Path javaHome, Integer release,
+                  String license, String url, Path sourceDir, Path resourceDir, Path jar, Path javaHome,
+                  Integer release,
                   List<Dependency> dependencies, Map<String, Object> settings, List<Path> compileClasspath,
                   List<String> compileModuleOptions) {
 
