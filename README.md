@@ -37,8 +37,7 @@ when one is set.
 
 ## Configuration
 
-Everything lives in `project.jsonc`. Settings on the workspace root apply to every module; a module's own
-`"extensions": { "publish": ... }` overrides them key by key.
+The POM's metadata comes from `project.jsonc`:
 
 ```jsonc
 {
@@ -47,22 +46,27 @@ Everything lives in `project.jsonc`. Settings on the workspace root apply to eve
   "version": "1.0.0",
   "description": "What it does",
   "license": "Apache-2.0",                    // an SPDX id
-  "url": "https://github.com/me/my-lib",
-  "extensions": {
-    "publish": {
-      "repositories": {
-        "faststats": {
-          "url": "https://repo.faststats.dev/releases",
-          "snapshots": "https://repo.faststats.dev/snapshots"
-        },
-        "central": { "type": "central" }         // "publishingType": "automatic" (default) or "user_managed"
-      },
-      "developers": [ { "id": "me", "name": "My Name", "email": "me@example.com" } ],
-      "scm": "https://github.com/me/my-lib",     // defaults to "url" on GitHub, GitLab and Codeberg
-      "javadoc": true,                            // also for repositories other than Central
-      "sign": false                               // defaults to true for Central only
-    }
-  }
+  "url": "https://github.com/me/my-lib"
+}
+```
+
+Everything else lives in `jpm-publish.jsonc` next to it. On the workspace root it applies to every module;
+a module's own `jpm-publish.jsonc` overrides it key by key.
+
+```jsonc
+{
+  "repositories": {
+    "faststats": {
+      "url": "https://repo.faststats.dev/releases",
+      "snapshots": "https://repo.faststats.dev/snapshots"
+    },
+    "central": { "type": "central" }         // "publishingType": "automatic" (default) or "user_managed"
+  },
+  "developers": [ { "id": "me", "name": "My Name", "email": "me@example.com" } ],
+  "scm": "https://github.com/me/my-lib",     // defaults to "url" on GitHub, GitLab and Codeberg
+  "javadoc": true,                            // also for repositories other than Central
+  "sign": false,                              // defaults to true for Central only
+  "skip": false                               // true leaves this module out
 }
 ```
 
@@ -72,7 +76,7 @@ Everything lives in `project.jsonc`. Settings on the workspace root apply to eve
 
 ## Credentials
 
-Credentials never go in `project.jsonc`. They come from the environment:
+Credentials never go in `project.jsonc` or `jpm-publish.jsonc`. They come from the environment:
 
 | Variable | |
 |---|---|

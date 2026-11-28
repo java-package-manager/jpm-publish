@@ -171,10 +171,10 @@ final class Pom {
         if (m.url() == null) p.add("\"url\" in project.jsonc (the project's home page)");
         if (m.license() == null) p.add("\"license\" in project.jsonc (an SPDX id such as Apache-2.0)");
         Object devs = m.settings().get("developers");
-        if (!(devs instanceof List<?> l) || l.isEmpty()) p.add("\"developers\" in extensions.publish, e.g. [{ \"name\": \"Your Name\" }]");
+        if (!(devs instanceof List<?> l) || l.isEmpty()) p.add("\"developers\" in jpm-publish.jsonc, e.g. [{ \"name\": \"Your Name\" }]");
         boolean scm = m.settings().get("scm") != null
                 || (m.url() != null && m.url().matches("https://(github\\.com|gitlab\\.com|codeberg\\.org)/.+"));
-        if (!scm) p.add("\"scm\" in extensions.publish (the repository URL)");
+        if (!scm) p.add("\"scm\" in jpm-publish.jsonc (the repository URL)");
         if (m.snapshot()) p.add("a release version (Maven Central does not take -SNAPSHOT versions)");
         return p;
     }

@@ -1,17 +1,24 @@
 package dev.jpm.publish;
 
+import dev.jpm.api.json.Jsonc;
 import dev.jpm.api.model.Classpaths;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
- * The project as jpm's protocol describes it (project/load and project/classpaths).
+ * The project as jpm's protocol describes it (project/load and project/classpaths), with the settings from
+ * {@value #FILE} in the project's folder and in each module's.
  */
 record Project(Path dir, String name, boolean workspace, Map<String, Object> settings, List<Module> modules) {
+
+    static final String FILE = "jpm-publish.jsonc";
 
     record Dependency(String key, String kind, String scope, String spec, String resolved, String group,
                       String artifact, String classifier, String version, boolean runtimeOnly, List<String> exclude,
@@ -32,7 +39,12 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
     }
 
     static Project from(dev.jpm.api.model.Project p, Map<String, Classpaths> classpaths) {
-        Map<String, Object> rootSettings = map(p.extensions().get("publish"));
+        return from(p, classpaths, Project::settings);
+    }
+
+    static Project from(dev.jpm.api.model.Project p, Map<String, Classpaths> classpaths,
+                        Function<Path, Map<String, Object>> settingsIn) {
+        Map<String, Object> rootSettings = settingsIn.apply(p.dir());
         List<Module> modules = new ArrayList<>();
         for (dev.jpm.api.model.Module m : p.modules()) {
             List<Dependency> deps = new ArrayList<>();
@@ -50,7 +62,7 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                         d.runtimeOnly(), d.exclude(), d.api()));
             }
             Map<String, Object> settings = new LinkedHashMap<>(rootSettings);
-            settings.putAll(map(m.extensions().get("publish")));
+            if (!m.dir().equals(p.dir())) settings.putAll(settingsIn.apply(m.dir()));
             List<Path> cp = new ArrayList<>();
             Classpaths c = classpaths.get(m.name());
             if (c != null) {
@@ -65,6 +77,24 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                     settings, cp, moduleOptions));
         }
         return new Project(p.dir(), p.name(), p.workspace(), rootSettings, modules);
+    }
+
+    /**
+     * The settings in {@value #FILE} in a folder; none when it has no such file.
+     */
+    static Map<String, Object> settings(Path dir) {
+        Path file = dir.resolve(FILE);
+        if (!Files.isRegularFile(file)) return Map.of();
+        Object value;
+        try {
+            value = Jsonc.parse(Files.readString(file));
+        } catch (IOException e) {
+            throw new PublishException("Cannot read " + file + ": " + e.getMessage());
+        } catch (Jsonc.ParseException e) {
+            throw new PublishException(file + ": " + e.getMessage());
+        }
+        if (!(value instanceof Map)) throw new PublishException(file + ": must be an object");
+        return map(value);
     }
 
     private static Path first(List<Path> paths) {

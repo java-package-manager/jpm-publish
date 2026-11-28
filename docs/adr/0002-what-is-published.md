@@ -13,4 +13,5 @@ Status: accepted
 - In the `.module` file, `org.gradle.jvm.version` is a number, as in Gradle's own files, and a classified
   jar is referred to the way Gradle refers to it (`thirdPartyCompatibility.artifactSelector`)
   (`GradleModule`).
-- A module's `extensions.publish` settings override the workspace root's, key by key (`Project`).
+- Settings live in `jpm-publish.jsonc`, not in `project.jsonc`: jpm's manifest declares extensions but
+  holds none of their settings. A module's file overrides the workspace root's, key by key (`Project`).
