@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PublishTest {
     static final String INFO = """
             { "dir": "/p", "name": "ws", "workspace": true,
-              "extensions": { "publish": { "developers": [ { "name": "Dev" } ], "repositories": { "r": { "url": "https://r.example/releases" } } } },
               "modules": [
                 { "name": "api", "group": "com.acme", "version": "1.2.0", "dir": "/p/api", "url": "https://github.com/acme/ws",
                   "description": "API", "license": "MIT", "jar": "/p/api/dist/api-1.2.0.jar",
@@ -48,15 +47,19 @@ class PublishTest {
                     { "key": "org.projectlombok:lombok", "kind": "maven", "scope": "dev", "spec": "1.18.34", "group": "org.projectlombok", "artifact": "lombok" },
                     { "key": "org.junit.jupiter:junit-jupiter", "kind": "maven", "scope": "test", "spec": "5.11.4", "group": "org.junit.jupiter", "artifact": "junit-jupiter" }
                   ] },
-                { "name": "impl", "group": "com.acme", "version": "1.2.0", "dir": "/p/impl", "dependencies": [],
-                  "extensions": { "publish": { "skip": true } } },
+                { "name": "impl", "group": "com.acme", "version": "1.2.0", "dir": "/p/impl", "dependencies": [] },
                 { "name": "app", "version": "1.2.0", "dir": "/p/app", "dependencies": [
                     { "key": "github:acme/tool", "kind": "git", "scope": "runtime", "spec": "^1.0", "repository": "github:acme/tool" } ] }
               ] }
             """;
 
     static Project project() {
-        return Project.from(Results.project((Map<String, Object>) Jsonc.parse(INFO)), Map.of());
+        Map<Path, Map<String, Object>> settings = Map.of(
+                Path.of("/p"), (Map<String, Object>) Jsonc.parse("""
+                        { "developers": [ { "name": "Dev" } ], "repositories": { "r": { "url": "https://r.example/releases" } } }"""),
+                Path.of("/p/impl"), Map.of("skip", true));
+        return Project.from(Results.project((Map<String, Object>) Jsonc.parse(INFO)), Map.of(),
+                dir -> settings.getOrDefault(dir, Map.of()));
     }
 
     @Test
@@ -78,6 +81,18 @@ class PublishTest {
         assertTrue(pom.contains("<connection>scm:git:https://github.com/acme/ws.git</connection>"), "scm from the GitHub url");
         assertTrue(pom.contains("<developer>\n      <name>Dev</name>"), "developers from the root settings");
         assertTrue(Pom.centralProblems(p.module("api")).isEmpty(), Pom.centralProblems(p.module("api")).toString());
+    }
+
+    @Test
+    void refusesSettingsInProjectJsonc() {
+        Map<String, Object> info = (Map<String, Object>) Jsonc.parse("""
+                { "dir": "/p", "name": "lib", "extensions": { "publish": { "skip": true } },
+                  "modules": [ { "name": "lib", "version": "1.0.0", "dir": "/p", "dependencies": [] } ] }
+                """);
+        PublishException e = assertThrows(PublishException.class,
+                () -> Project.from(Results.project(info), Map.of(), dir -> Map.of()));
+        assertTrue(e.getMessage().contains("does not read \"extensions.publish\"; move it to"), e.getMessage());
+        assertTrue(e.getMessage().contains("jpm-publish.jsonc"), e.getMessage());
     }
 
     @Test

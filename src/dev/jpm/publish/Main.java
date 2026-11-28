@@ -31,7 +31,7 @@ public final class Main {
 
             Usage: jpm publish [repository] [options]
 
-              repository        A name from "extensions.publish.repositories" in project.jsonc, or a URL.
+              repository        A name from "repositories" in jpm-publish.jsonc, or a URL.
                                 Without one: the only configured repository.
               --local           Publish to the local Maven repository (~/.m2/repository)
               --module <name>   Publish only this module (repeatable); default: every module with a "group"
@@ -42,9 +42,9 @@ public final class Main {
               --sign / --no-sign  Sign with gpg (default: on for Maven Central, off elsewhere)
               --no-wait         Maven Central: do not wait for validation
 
-            Configuration (project.jsonc):
-              "description", "license" (SPDX id), "url" and "group" go into the POM.
-              "extensions": { "publish": {
+            Configuration:
+              project.jsonc: "description", "license" (SPDX id), "url" and "group" go into the POM.
+              jpm-publish.jsonc (project root; a module's own overrides it key by key): {
                   "repositories": {
                     "faststats": { "url": "https://repo.faststats.dev/releases",
                                    "snapshots": "https://repo.faststats.dev/snapshots" },
@@ -53,7 +53,7 @@ public final class Main {
                   "developers": [ { "id": "me", "name": "My Name", "email": "me@example.com" } ],
                   "scm": "https://github.com/me/project",    // defaults to "url" on GitHub/GitLab/Codeberg
                   "sign": true, "javadoc": true, "skip": false
-              } }
+              }
 
             Credentials (environment):
               JPM_PUBLISH_<REPOSITORY>_USERNAME / _PASSWORD   e.g. JPM_PUBLISH_FASTSTATS_USERNAME
@@ -265,8 +265,8 @@ public final class Main {
         if (name == null) {
             if (repos.size() == 1) name = repos.keySet().iterator().next();
             else if (repos.isEmpty()) {
-                throw new PublishException("No repository to publish to. Add one to project.jsonc:\n"
-                        + "  \"extensions\": { \"publish\": { \"repositories\": { \"myrepo\": { \"url\": \"https://...\" } } } }\n"
+                throw new PublishException("No repository to publish to. Add one to jpm-publish.jsonc:\n"
+                        + "  { \"repositories\": { \"myrepo\": { \"url\": \"https://...\" } } }\n"
                         + "or run `jpm publish --local` or `jpm publish <url>`.");
             } else {
                 throw new PublishException("Several repositories are configured; choose one: jpm publish <"
