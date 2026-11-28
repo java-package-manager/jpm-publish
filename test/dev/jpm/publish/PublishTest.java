@@ -84,18 +84,6 @@ class PublishTest {
     }
 
     @Test
-    void refusesSettingsInProjectJsonc() {
-        Map<String, Object> info = (Map<String, Object>) Jsonc.parse("""
-                { "dir": "/p", "name": "lib", "extensions": { "publish": { "skip": true } },
-                  "modules": [ { "name": "lib", "version": "1.0.0", "dir": "/p", "dependencies": [] } ] }
-                """);
-        PublishException e = assertThrows(PublishException.class,
-                () -> Project.from(Results.project(info), Map.of(), dir -> Map.of()));
-        assertTrue(e.getMessage().contains("does not read \"extensions.publish\"; move it to"), e.getMessage());
-        assertTrue(e.getMessage().contains("jpm-publish.jsonc"), e.getMessage());
-    }
-
-    @Test
     void refusesWhatMavenUsersCannotResolve() {
         Project p = project();
         PublishException e = assertThrows(PublishException.class, () -> Pom.write(p, p.module("app")));

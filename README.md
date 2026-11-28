@@ -51,8 +51,7 @@ The POM's metadata comes from `project.jsonc`:
 ```
 
 Everything else lives in `jpm-publish.jsonc` next to it. On the workspace root it applies to every module;
-a module's own `jpm-publish.jsonc` overrides it key by key. jpm-publish does not read
-`"extensions": { "publish": ... }` in `project.jsonc` and stops with an error when it finds it.
+a module's own `jpm-publish.jsonc` overrides it key by key.
 
 ```jsonc
 {

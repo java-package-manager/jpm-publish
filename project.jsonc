@@ -2,7 +2,7 @@
 {
   "name": "jpm-publish",
   "group": "dev.jpm",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "MIT",
   "description": "Publish jpm projects to Maven repositories and Maven Central",
   "url": "https://github.com/java-package-manager/jpm-publish",

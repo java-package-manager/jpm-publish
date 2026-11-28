@@ -14,6 +14,4 @@ Status: accepted
   jar is referred to the way Gradle refers to it (`thirdPartyCompatibility.artifactSelector`)
   (`GradleModule`).
 - Settings live in `jpm-publish.jsonc`, not in `project.jsonc`: jpm's manifest declares extensions but
-  holds none of their settings. A module's file overrides the workspace root's, key by key, and an
-  `extensions.publish` left in `project.jsonc` is an error, not ignored, so a `"skip": true` is never
-  silently lost (`Project`).
+  holds none of their settings. A module's file overrides the workspace root's, key by key (`Project`).

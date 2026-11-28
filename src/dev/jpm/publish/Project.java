@@ -44,7 +44,6 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
 
     static Project from(dev.jpm.api.model.Project p, Map<String, Classpaths> classpaths,
                         Function<Path, Map<String, Object>> settingsIn) {
-        refuseManifestSettings(p.dir(), p.extensions());
         Map<String, Object> rootSettings = settingsIn.apply(p.dir());
         List<Module> modules = new ArrayList<>();
         for (dev.jpm.api.model.Module m : p.modules()) {
@@ -62,7 +61,6 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                 deps.add(new Dependency(d.key(), d.kind(), d.scope(), d.spec(), d.resolved(), group, artifact, d.classifier(), version,
                         d.runtimeOnly(), d.exclude(), d.api()));
             }
-            refuseManifestSettings(m.dir(), m.extensions());
             Map<String, Object> settings = new LinkedHashMap<>(rootSettings);
             if (!m.dir().equals(p.dir())) settings.putAll(settingsIn.apply(m.dir()));
             List<Path> cp = new ArrayList<>();
@@ -79,13 +77,6 @@ record Project(Path dir, String name, boolean workspace, Map<String, Object> set
                     settings, cp, moduleOptions));
         }
         return new Project(p.dir(), p.name(), p.workspace(), rootSettings, modules);
-    }
-
-    private static void refuseManifestSettings(Path dir, Map<String, Object> extensions) {
-        if (extensions.containsKey("publish")) {
-            throw new PublishException(dir.resolve("project.jsonc") + ": jpm-publish does not read \"extensions.publish\"; move it to "
-                    + dir.resolve(FILE) + " (the object itself, without \"extensions\" and \"publish\")");
-        }
     }
 
     /**
