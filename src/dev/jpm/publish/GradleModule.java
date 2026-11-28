@@ -25,7 +25,8 @@ final class GradleModule {
     /**
      * The published jar, sources jar and javadoc jar, each null when not published.
      */
-    record Files(Path jar, Path sources, Path javadoc) {}
+    record Files(Path jar, Path sources, Path javadoc) {
+    }
 
     static String write(Project.Module m, List<Pom.Dep> deps, Files files) {
         List<Pom.Dep> api = new ArrayList<>();
@@ -49,8 +50,10 @@ final class GradleModule {
         List<String> variants = new ArrayList<>();
         variants.add(variant("apiElements", library(m, "java-api"), api, files.jar()));
         variants.add(variant("runtimeElements", library(m, "java-runtime"), runtime, files.jar()));
-        if (files.sources() != null) variants.add(variant("sourcesElements", docs("sources"), List.of(), files.sources()));
-        if (files.javadoc() != null) variants.add(variant("javadocElements", docs("javadoc"), List.of(), files.javadoc()));
+        if (files.sources() != null)
+            variants.add(variant("sourcesElements", docs("sources"), List.of(), files.sources()));
+        if (files.javadoc() != null)
+            variants.add(variant("javadocElements", docs("javadoc"), List.of(), files.javadoc()));
         x.append(String.join(",\n", variants)).append("\n");
         x.append("  ]\n");
         x.append("}\n");

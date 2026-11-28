@@ -92,7 +92,8 @@ public final class Main {
      * Options of one run.
      */
     record Options(String repository, boolean local, List<String> modules, boolean dryRun, boolean build,
-                   boolean sources, Boolean javadoc, Boolean sign, boolean waitForCentral) {}
+                   boolean sources, Boolean javadoc, Boolean sign, boolean waitForCentral) {
+    }
 
     /**
      * The project, from the jpm that runs this extension, over jpm's protocol ({@code jpm api}).
@@ -130,7 +131,8 @@ public final class Main {
                 }
                 default -> {
                     if (a.startsWith("--module=")) modules.add(a.substring(9));
-                    else if (a.startsWith("-")) throw new PublishException("Unknown option " + a + ". Run `jpm publish --help`.");
+                    else if (a.startsWith("-"))
+                        throw new PublishException("Unknown option " + a + ". Run `jpm publish --help`.");
                     else if (repo != null) throw new PublishException("Give one repository, not " + repo + " and " + a);
                     else repo = a;
                 }
@@ -300,7 +302,8 @@ public final class Main {
             for (String n : o.modules()) {
                 Project.Module m = project.module(n);
                 if (m == null) throw new PublishException("No module named \"" + n + "\"");
-                if (m.group() == null) throw new PublishException(n + " has no \"group\" in its project.jsonc; Maven coordinates need one");
+                if (m.group() == null)
+                    throw new PublishException(n + " has no \"group\" in its project.jsonc; Maven coordinates need one");
                 out.add(m);
             }
             return out;

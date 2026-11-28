@@ -43,7 +43,9 @@ final class Pom {
     /**
      * Dependencies as they appear in the POM: {group, artifact, version, classifier, scope}, plus exclusions.
      */
-    record Dep(String group, String artifact, String version, String classifier, String scope, List<String> exclusions) {}
+    record Dep(String group, String artifact, String version, String classifier, String scope,
+               List<String> exclusions) {
+    }
 
     static List<Dep> dependencies(Project project, Project.Module m) {
         List<Dep> out = new ArrayList<>();
@@ -65,8 +67,9 @@ final class Pom {
                         out.add(new Dep(sib.group(), sib.name(), sib.version(), null, scope, d.exclude()));
                     }
                 }
-                case "git" -> problems.add(d.key() + " is a Git dependency, which Maven users cannot resolve. Publish it to a"
-                        + " Maven repository and depend on those coordinates instead");
+                case "git" ->
+                        problems.add(d.key() + " is a Git dependency, which Maven users cannot resolve. Publish it to a"
+                                + " Maven repository and depend on those coordinates instead");
                 default -> problems.add("unknown dependency kind " + d.kind() + " for " + d.key());
             }
         }
@@ -112,14 +115,16 @@ final class Pom {
                 Map<String, Object> d = (Map<String, Object>) o;
                 x.append("    <developer>\n");
                 for (String k : List.of("id", "name", "email", "organization", "url")) {
-                    if (d.get(k) != null) tag(x, "      ", k.equals("organization") ? "organization" : k, d.get(k).toString());
+                    if (d.get(k) != null)
+                        tag(x, "      ", k.equals("organization") ? "organization" : k, d.get(k).toString());
                 }
                 x.append("    </developer>\n");
             }
             x.append("  </developers>\n");
         }
         String scm = (String) s.get("scm");
-        if (scm == null && m.url() != null && m.url().matches("https://(github\\.com|gitlab\\.com|codeberg\\.org)/.+")) scm = m.url();
+        if (scm == null && m.url() != null && m.url().matches("https://(github\\.com|gitlab\\.com|codeberg\\.org)/.+"))
+            scm = m.url();
         if (scm != null) {
             String repo = scm.replaceAll("\\.git$", "");
             x.append("  <scm>\n");
@@ -171,7 +176,8 @@ final class Pom {
         if (m.url() == null) p.add("\"url\" in project.jsonc (the project's home page)");
         if (m.license() == null) p.add("\"license\" in project.jsonc (an SPDX id such as Apache-2.0)");
         Object devs = m.settings().get("developers");
-        if (!(devs instanceof List<?> l) || l.isEmpty()) p.add("\"developers\" in jpm-publish.jsonc, e.g. [{ \"name\": \"Your Name\" }]");
+        if (!(devs instanceof List<?> l) || l.isEmpty())
+            p.add("\"developers\" in jpm-publish.jsonc, e.g. [{ \"name\": \"Your Name\" }]");
         boolean scm = m.settings().get("scm") != null
                 || (m.url() != null && m.url().matches("https://(github\\.com|gitlab\\.com|codeberg\\.org)/.+"));
         if (!scm) p.add("\"scm\" in jpm-publish.jsonc (the repository URL)");
